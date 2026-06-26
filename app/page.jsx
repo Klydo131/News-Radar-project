@@ -32,6 +32,8 @@ const INTEL_FEED_DB = [
     sourceOwnership: "Non-profit / Open Source Trust",
     entities: ["OpenSSL", "CVE-2026-9872", "Cryptography", "Patch 3.2.1"],
     coordinates: { x: 48, y: 26 },
+    isPolitical: false,
+    virality: { score: 85, views: "1.4M", readers: "680K", shares: "42K", status: "Viral" },
     compareHeadlines: [
       { outlet: "Progressive Focus (MSNBC)", title: "Major Cryptographic Security Flaw Patched in OpenSSL Library" },
       { outlet: "Neutral Outlets (Reuters)", title: "OpenSSL Releases Emergency Security Fix Following Vulnerability Report" },
@@ -61,6 +63,8 @@ const INTEL_FEED_DB = [
     sourceOwnership: "Corporate Conglomerate / Private Equity",
     entities: ["European Union", "AI Act", "Biometrics", "Compliance Auditing"],
     coordinates: { x: 48, y: 26 },
+    isPolitical: true,
+    virality: { score: 72, views: "920K", readers: "380K", shares: "18K", status: "Trending" },
     compareHeadlines: [
       { outlet: "Progressive Focus (The Guardian)", title: "EU Takes Historical Leap in Safeguarding Human Rights Against AI Risks" },
       { outlet: "Neutral Outlets (AP News)", title: "EU Artificial Intelligence Act Compliance Phase Begins Today" },
@@ -90,6 +94,8 @@ const INTEL_FEED_DB = [
     sourceOwnership: "Public / State-funded Lab",
     entities: ["Livermore Lab", "Fusion Energy", "Q-Factor", "Clean Tech"],
     coordinates: { x: 22, y: 24 },
+    isPolitical: false,
+    virality: { score: 94, views: "3.1M", readers: "1.5M", shares: "120K", status: "Super-Viral" },
     compareHeadlines: [
       { outlet: "Progressive Focus (HuffPost)", title: "Clean Energy Revolution: Scientists Achieve Net Gain in Fusion Spark" },
       { outlet: "Neutral Outlets (AP News)", title: "Livermore Laboratory Reports Net Energy Breakeven in Fusion Test" },
@@ -119,6 +125,8 @@ const INTEL_FEED_DB = [
     sourceOwnership: "Financial News Syndicate",
     entities: ["Semiconductors", "Neon Supply", "Geopolitics", "Lithography"],
     coordinates: { x: 75, y: 28 },
+    isPolitical: true,
+    virality: { score: 45, views: "310K", readers: "120K", shares: "5K", status: "Stable" },
     compareHeadlines: [
       { outlet: "Progressive Focus (MSNBC)", title: "Collaborative Global Efforts Protect Chip Supply from Geopolitical Crisis" },
       { outlet: "Neutral Outlets (Reuters)", title: "Chipmakers Relocate Neon Refining Hubs to Japan and South Korea" },
@@ -314,6 +322,13 @@ export default function Home() {
             const right = Math.floor(Math.cos(seed) * 25 + 30);
             const center = 100 - left - right;
             const isIT = idx % 2 === 0;
+
+            const scoreVal = Math.floor(Math.abs(Math.sin(seed)) * 60 + 35);
+            const statusVal = scoreVal > 80 ? "Viral" : scoreVal > 55 ? "Trending" : "Stable";
+            const viewsVal = (scoreVal * 12.5).toFixed(0) + "K";
+            const readersVal = (scoreVal * 5.2).toFixed(0) + "K";
+            const sharesVal = (scoreVal * 1.8).toFixed(0) + "K";
+            const isPol = item.title.toLowerCase().match(/(eu|union|policy|rules|court|law|regulat|governm|white house|president|senate|congress)/i) ? true : false;
             
             return {
               id: seed,
@@ -334,6 +349,8 @@ export default function Home() {
               sourceOwnership: "Public / State Media",
               entities: ["RSS Feed Ingestion", item.source || "Unknown Publisher"],
               coordinates: isIT ? { x: 48, y: 26 } : { x: 60, y: 40 },
+              isPolitical: isPol,
+              virality: { score: scoreVal, views: viewsVal, readers: readersVal, shares: sharesVal, status: statusVal },
               compareHeadlines: [
                 { outlet: "Progressive Focus", title: item.title },
                 { outlet: "Neutral Outlets", title: item.title },
@@ -1014,29 +1031,35 @@ ${selectedArticle.summaries.it}
                 <div className="bias-card-title">Geopolitical Threat Hotspot Map</div>
                 <div className="map-container">
                   {/* Detailed vector world map with high-tech grid overlay */}
-                  <svg viewBox="0 0 100 80" className="map-svg" fill="none">
+                  <svg viewBox="0 0 200 100" className="map-svg" fill="none">
                     {/* Grid Backdrop Lines */}
-                    <line x1="0" y1="20" x2="100" y2="20" className="map-grid-line" />
-                    <line x1="0" y1="40" x2="100" y2="40" className="map-grid-line" />
-                    <line x1="0" y1="60" x2="100" y2="60" className="map-grid-line" />
-                    <line x1="20" y1="0" x2="20" y2="80" className="map-grid-line" />
-                    <line x1="40" y1="0" x2="40" y2="80" className="map-grid-line" />
-                    <line x1="60" y1="0" x2="60" y2="80" className="map-grid-line" />
-                    <line x1="80" y1="0" x2="80" y2="80" className="map-grid-line" />
+                    <line x1="0" y1="20" x2="200" y2="20" className="map-grid-line" />
+                    <line x1="0" y1="40" x2="200" y2="40" className="map-grid-line" />
+                    <line x1="0" y1="60" x2="200" y2="60" className="map-grid-line" />
+                    <line x1="0" y1="80" x2="200" y2="80" className="map-grid-line" />
+                    <line x1="20" y1="0" x2="20" y2="100" className="map-grid-line" />
+                    <line x1="40" y1="0" x2="40" y2="100" className="map-grid-line" />
+                    <line x1="60" y1="0" x2="60" y2="100" className="map-grid-line" />
+                    <line x1="80" y1="0" x2="80" y2="100" className="map-grid-line" />
+                    <line x1="100" y1="0" x2="100" y2="100" className="map-grid-line" />
+                    <line x1="120" y1="0" x2="120" y2="100" className="map-grid-line" />
+                    <line x1="140" y1="0" x2="140" y2="100" className="map-grid-line" />
+                    <line x1="160" y1="0" x2="160" y2="100" className="map-grid-line" />
+                    <line x1="180" y1="0" x2="180" y2="100" className="map-grid-line" />
 
                     {/* Continental Polygons with theme-adaptive fill and stroke */}
                     {/* North America */}
-                    <path d="M12,18 L18,10 L28,6 L38,8 L36,18 L28,20 L30,28 L24,34 L18,34 L12,24 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
+                    <path d="M15,25 L20,20 L30,18 L35,15 L45,18 L48,15 L52,18 L55,25 L58,22 L62,25 L60,30 L65,32 L60,35 L62,42 L58,45 L50,42 L52,50 L50,55 L46,55 L48,45 L42,42 L35,42 L30,35 L22,35 L20,30 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
                     {/* South America */}
-                    <path d="M22,36 L28,36 L30,42 L26,56 L20,62 L18,52 L20,44 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
+                    <path d="M46,55 L50,55 L58,58 L64,58 L68,62 L64,68 L56,76 L52,84 L48,90 L46,90 L47,82 L44,72 L42,65 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
                     {/* Greenland */}
-                    <path d="M30,4 L38,5 L36,12 L30,10 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
+                    <path d="M55,10 L68,5 L72,8 L68,18 L60,18 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
                     {/* Africa */}
-                    <path d="M42,32 L54,32 L56,38 L54,46 L48,54 L44,48 L40,42 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
+                    <path d="M80,48 L85,44 L92,42 L102,42 L106,46 L112,48 L116,52 L112,58 L108,64 L104,74 L102,85 L98,85 L98,76 L92,68 L88,60 L80,54 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
                     {/* Eurasia */}
                     <path d="M40,12 L50,8 L64,10 L78,8 L86,16 L88,26 L80,34 L72,36 L62,38 L50,30 L42,24 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
                     {/* Australia */}
-                    <path d="M74,48 L82,48 L84,54 L76,56 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
+                    <path d="M155,68 L165,65 L172,68 L175,74 L170,80 L160,80 L155,75 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
                   </svg>
                   {/* Pulsing pointer dot based on selected article coordinates */}
                   {selectedArticle.coordinates && (
@@ -1056,7 +1079,20 @@ ${selectedArticle.summaries.it}
 
               {/* Media Bias Profile Card with Circular Gauge */}
               <div className="bias-analysis-card" ref={biasCardRef}>
-                <div className="bias-card-title">Editorial Leanings Spectrum</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <div className="bias-card-title">Editorial Leanings Spectrum</div>
+                  <span style={{ 
+                    fontSize: '0.65rem', 
+                    padding: '0.15rem 0.45rem', 
+                    borderRadius: '4px', 
+                    background: selectedArticle.isPolitical ? 'rgba(239, 68, 68, 0.15)' : 'rgba(99, 102, 241, 0.15)',
+                    color: selectedArticle.isPolitical ? 'var(--danger)' : 'var(--accent)',
+                    fontWeight: 'bold',
+                    border: `1px solid ${selectedArticle.isPolitical ? 'rgba(239, 68, 68, 0.3)' : 'rgba(99, 102, 241, 0.3)'}`
+                  }}>
+                    {selectedArticle.isPolitical ? 'POLITICAL TOPIC' : 'NON-POLITICAL'}
+                  </span>
+                </div>
                 
                 {(() => {
                   const leftPct = selectedArticle.editorialLeanings.left || 0;
@@ -1169,6 +1205,88 @@ ${selectedArticle.summaries.it}
                         <div className="cred-badge">
                           <span className="label">Source Type</span>
                           <span className="value" style={{ fontSize: '0.7rem' }}>Multi-Node Ingest</span>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* Virality & Engagement Analytics Card with Circular Gauge */}
+              <div className="bias-analysis-card" style={{ marginTop: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <div className="bias-card-title">Virality & Engagement Spectrum</div>
+                  <span style={{ 
+                    fontSize: '0.65rem', 
+                    padding: '0.15rem 0.40rem', 
+                    borderRadius: '4px', 
+                    background: (selectedArticle.virality?.score || 50) > 70 ? 'rgba(236, 72, 153, 0.15)' : 'rgba(6, 182, 212, 0.15)',
+                    color: (selectedArticle.virality?.score || 50) > 70 ? '#ec4899' : '#06b6d4',
+                    fontWeight: 'bold',
+                    border: `1px solid ${(selectedArticle.virality?.score || 50) > 70 ? 'rgba(236, 72, 153, 0.3)' : 'rgba(6, 182, 212, 0.3)'}`
+                  }}>
+                    {(selectedArticle.virality?.status || 'Stable').toUpperCase()}
+                  </span>
+                </div>
+
+                {(() => {
+                  const score = selectedArticle.virality?.score || 50;
+                  const needleRotation = (score / 100) * 180 - 90;
+
+                  return (
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '0.5rem 0 1rem 0' }}>
+                        {/* Semi-circular dial gauge */}
+                        <svg width="200" height="110" viewBox="0 0 200 110" className="gauge-svg">
+                          <defs>
+                            <linearGradient id="viralityGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#06b6d4" />
+                              <stop offset="50%" stopColor="#a855f7" />
+                              <stop offset="100%" stopColor="#ec4899" />
+                            </linearGradient>
+                          </defs>
+                          {/* Outer Gauge Track Arc */}
+                          <path 
+                            d="M 20 100 A 80 80 0 0 1 180 100" 
+                            fill="none" 
+                            stroke="rgba(255,255,255,0.05)" 
+                            strokeWidth="12" 
+                            strokeLinecap="round"
+                          />
+                          {/* Colored gradient arc */}
+                          <path 
+                            d="M 20 100 A 80 80 0 0 1 180 100" 
+                            fill="none" 
+                            stroke="url(#viralityGradient)" 
+                            strokeWidth="12" 
+                            strokeLinecap="round"
+                            strokeDasharray="251.2"
+                            strokeDashoffset="0"
+                          />
+                          {/* Pointer Needle */}
+                          <g className="gauge-needle" style={{ transform: `rotate(${needleRotation}deg)`, transformOrigin: '100px 100px' }}>
+                            <line x1="100" y1="100" x2="100" y2="35" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                            <circle cx="100" cy="100" r="6" fill="#ffffff" />
+                          </g>
+                          {/* Score tag in center */}
+                          <text x="100" y="95" textAnchor="middle" fill="var(--text-main)" fontSize="10" fontWeight="bold" fontFamily="var(--font-mono)">
+                            Engagement: {score}%
+                          </text>
+                        </svg>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', textAlign: 'center', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', background: 'rgba(0,0,0,0.15)', padding: '0.4rem', borderRadius: '6px', border: '1px solid var(--panel-border)' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>VIEWS</span>
+                          <strong style={{ color: 'var(--text-main)', fontSize: '0.85rem' }}>{selectedArticle.virality?.views || 'N/A'}</strong>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', background: 'rgba(0,0,0,0.15)', padding: '0.4rem', borderRadius: '6px', border: '1px solid var(--panel-border)' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>READERS</span>
+                          <strong style={{ color: 'var(--text-main)', fontSize: '0.85rem' }}>{selectedArticle.virality?.readers || 'N/A'}</strong>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', background: 'rgba(0,0,0,0.15)', padding: '0.4rem', borderRadius: '6px', border: '1px solid var(--panel-border)' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>SHARES</span>
+                          <strong style={{ color: 'var(--text-main)', fontSize: '0.85rem' }}>{selectedArticle.virality?.shares || 'N/A'}</strong>
                         </div>
                       </div>
                     </>
