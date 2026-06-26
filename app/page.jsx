@@ -9,8 +9,9 @@ export default function Home() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    // In a real environment, this connects to the local Flask API
-    fetch('http://localhost:5000/api/news')
+    // In Vercel, this calls the Serverless Python function natively.
+    // Locally, it uses the local API.
+    fetch('/api/news')
       .then(res => res.json())
       .then(data => {
         if (data.error) throw new Error(data.error);
