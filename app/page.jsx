@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-// Mock sentiment analysis for demo purposes to add "useful information"
 const enrichWithAI = (article) => {
-  const keywords = ['AI', 'OpenAI', 'Security', 'Threat', 'Funding', 'Model'];
+  const keywords = ['AI', 'OpenAI', 'Security', 'Threat', 'Funding', 'Model', 'Google', 'Meta', 'Data'];
   const hasKeyword = keywords.find(k => article.title.includes(k) || (article.content && article.content.includes(k)));
   
   let sentiment = 'neutral';
-  if (article.title.toLowerCase().includes('safety') || article.title.toLowerCase().includes('threat') || article.title.toLowerCase().includes('slow')) sentiment = 'negative';
-  else if (article.title.toLowerCase().includes('funding') || article.title.toLowerCase().includes('lands') || article.title.toLowerCase().includes('release')) sentiment = 'positive';
+  const t = article.title.toLowerCase();
+  if (t.includes('safety') || t.includes('threat') || t.includes('slow') || t.includes('risk') || t.includes('fail')) sentiment = 'negative';
+  else if (t.includes('funding') || t.includes('lands') || t.includes('release') || t.includes('launch') || t.includes('growth')) sentiment = 'positive';
   
   return {
     ...article,
@@ -22,10 +22,25 @@ export default function Home() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Feature states
   const [search, setSearch] = useState('');
-  const [activeArticle, setActiveArticle] = useState(null);
+  const [badgeFilter, setBadgeFilter] = useState(null); // 'positive', 'negative', etc.
+  const [theme, setTheme] = useState('dark');
+  const [logs, setLogs] = useState([]);
+  const [tutorialStep, setTutorialStep] = useState(0); // 0 = hidden, 1+ = steps
 
+  const terminalRef = useRef(null);
+
+  // Initialization & Data fetching
   useEffect(() => {
+    // Check if tutorial was already done
+    const isDone = localStorage.getItem('nr_tutorial');
+    if (!isDone) setTutorialStep(1);
+
+    // Initial log
+    setLogs([{ type: 'log-info', text: 'Initializing Rust Core connection...' }]);
+
     fetch('/api/news')
       .then(res => res.json())
       .then(data => {
@@ -33,24 +48,88 @@ export default function Home() {
         const enriched = data.map(enrichWithAI);
         setArticles(enriched);
         setLoading(false);
+        setLogs(prev => [...prev, { type: 'log-success', text: `Ingested ${enriched.length} signals successfully.` }]);
       })
       .catch(err => {
         console.error("API error", err);
         setArticles([]);
         setError("System offline or synchronizing. Please check engine status.");
         setLoading(false);
+        setLogs(prev => [...prev, { type: 'log-err', text: `Connection failed: ${err.message}` }]);
       });
   }, []);
 
-  const filtered = articles.filter(a => 
-    a.title.toLowerCase().includes(search.toLowerCase()) || 
-    (a.content && a.content.toLowerCase().includes(search.toLowerCase()))
-  );
+  // Theme effect
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light-mode');
+    } else {
+      document.body.classList.remove('light-mode');
+    }
+  }, [theme]);
+
+  // Terminal Simulator
+  useEffect(() => {
+    const mockLogs = [
+      "[INFO] Scanning RSS feed: TechCrunch",
+      "[WARN] Rate limit approaching for ycombinator",
+      "[INFO] Parsing new unstructured data block",
+      "[SUCCESS] Data sanitized and indexed in SQLite",
+      "[INFO] AI Sentiment pipeline executing...",
+    ];
+    
+    const interval = setInterval(() => {
+      const randomLog = mockLogs[Math.floor(Math.random() * mockLogs.length)];
+      let type = 'log-info';
+      if (randomLog.includes('[WARN]')) type = 'log-warn';
+      if (randomLog.includes('[SUCCESS]')) type = 'log-success';
+      
+      setLogs(prev => {
+        const newLogs = [...prev, { type, text: randomLog }];
+        if (newLogs.length > 20) newLogs.shift();
+        return newLogs;
+      });
+    }, 4500);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Auto-scroll terminal
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [logs]);
+
+  // Derived state
+  const filtered = articles.filter(a => {
+    const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase()) || 
+                          (a.content && a.content.toLowerCase().includes(search.toLowerCase()));
+    const matchesBadge = badgeFilter ? (a.sentiment === badgeFilter || a.source === badgeFilter) : true;
+    return matchesSearch && matchesBadge;
+  });
 
   const stats = {
     total: articles.length,
     critical: articles.filter(a => a.sentiment === 'negative').length,
     positive: articles.filter(a => a.sentiment === 'positive').length,
+    neutral: articles.filter(a => a.sentiment === 'neutral').length,
+  };
+
+  const chartTotal = stats.critical + stats.positive + stats.neutral || 1; // avoid /0
+
+  // Handlers
+  const handleTutorialNext = () => {
+    if (tutorialStep === 3) {
+      localStorage.setItem('nr_tutorial', 'done');
+      setTutorialStep(0);
+    } else {
+      setTutorialStep(prev => prev + 1);
+    }
+  };
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -64,20 +143,46 @@ export default function Home() {
           </div>
           <span className="brand-text">NewsRadar</span>
         </div>
+        
         <nav className="nav-menu">
           <button className="nav-item active">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             <span>Dashboard</span>
           </button>
-          <button className="nav-item">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
-            <span>Analytics</span>
+          
+          <button className="nav-item" onClick={toggleTheme}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {theme === 'dark' ? (
+                <circle cx="12" cy="12" r="5"></circle>
+              ) : (
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              )}
+            </svg>
+            <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
           </button>
-          <button className="nav-item">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-            <span>Saved Intel</span>
+
+          <button className="nav-item" onClick={() => setTutorialStep(1)}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span>Tutorial</span>
           </button>
         </nav>
+
+        {/* Live Terminal */}
+        <div className="terminal-container">
+          <div className="terminal-header">
+            <div className="terminal-dot dot-r"></div>
+            <div className="terminal-dot dot-y"></div>
+            <div className="terminal-dot dot-g"></div>
+            <span style={{marginLeft: '0.5rem', color: '#666'}}>rust-core-engine</span>
+          </div>
+          <div className="terminal-body" ref={terminalRef}>
+            {logs.map((log, i) => (
+              <div key={i} className={`log-line ${log.type}`}>
+                <span style={{color: '#666'}}>[{new Date().toLocaleTimeString()}]</span> {log.text}
+              </div>
+            ))}
+          </div>
+        </div>
       </aside>
 
       {/* Main Interface */}
@@ -95,31 +200,59 @@ export default function Home() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <div style={{display: 'flex', gap: '1rem'}}>
-            <div className="badge badge-source" style={{padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-              <div style={{width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)'}}></div>
-              Engine Online
-            </div>
-          </div>
         </header>
 
         {/* Dashboard Widgets */}
         <section className="widgets-grid">
           <div className="widget-card">
-            <span className="widget-title">Total Signals Ingested</span>
+            <span className="widget-title">Sentiment Velocity Chart</span>
             <span className="widget-value">{loading ? '-' : stats.total}</span>
-            <div className="widget-sparkline"></div>
+            <div className="chart-container">
+              <div className="chart-bar chart-positive" style={{ width: `${(stats.positive / chartTotal) * 100}%` }}>
+                {stats.positive > 0 && stats.positive}
+              </div>
+              <div className="chart-bar chart-neutral" style={{ width: `${(stats.neutral / chartTotal) * 100}%` }}>
+                {stats.neutral > 0 && stats.neutral}
+              </div>
+              <div className="chart-bar chart-negative" style={{ width: `${(stats.critical / chartTotal) * 100}%` }}>
+                {stats.critical > 0 && stats.critical}
+              </div>
+            </div>
+            <div style={{display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>
+              <span><span style={{color: 'var(--success)'}}>■</span> Pos</span>
+              <span><span style={{color: 'var(--text-muted)'}}>■</span> Neu</span>
+              <span><span style={{color: 'var(--danger)'}}>■</span> Crit</span>
+            </div>
           </div>
+          
           <div className="widget-card">
-            <span className="widget-title">Critical Alerts (AI)</span>
+            <span className="widget-title">Critical Alerts</span>
             <span className="widget-value" style={{color: 'var(--danger)'}}>{loading ? '-' : stats.critical}</span>
-            <div className="widget-sparkline" style={{background: 'linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%)'}}></div>
+            <div style={{marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem'}}>
+              Signals flagged as high-risk threats.
+            </div>
           </div>
-          <div className="widget-card">
-            <span className="widget-title">Positive Developments</span>
-            <span className="widget-value" style={{color: 'var(--success)'}}>{loading ? '-' : stats.positive}</span>
-            <div className="widget-sparkline" style={{background: 'linear-gradient(90deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%)'}}></div>
-          </div>
+
+          {badgeFilter ? (
+            <div className="widget-card" style={{background: 'var(--accent-glow)', borderColor: 'var(--accent)'}}>
+              <span className="widget-title" style={{color: 'var(--text-main)'}}>Active Filter</span>
+              <span className="widget-value" style={{fontSize: '1.5rem', marginTop: '0.5rem'}}>{badgeFilter.toUpperCase()}</span>
+              <button 
+                onClick={() => setBadgeFilter(null)}
+                style={{marginTop: 'auto', background: 'var(--accent)', color: '#fff', padding: '0.5rem', borderRadius: '8px', fontWeight: 'bold'}}
+              >
+                Clear Filter
+              </button>
+            </div>
+          ) : (
+            <div className="widget-card">
+              <span className="widget-title">Global Feed</span>
+              <span className="widget-value" style={{fontSize: '1.5rem', marginTop: '0.5rem'}}>Unfiltered</span>
+              <div style={{marginTop: 'auto', color: 'var(--text-muted)', fontSize: '0.85rem'}}>
+                Click any badge on a card to pivot data.
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Intelligence Grid */}
@@ -145,18 +278,22 @@ export default function Home() {
         ) : (
           <div className="articles-grid">
             {filtered.map((article, i) => (
-              <div key={i} className="article-card" onClick={() => setActiveArticle(article)} style={{animationDelay: `${i * 0.05}s`}}>
+              <div key={i} className="article-card" style={{animationDelay: `${i * 0.05}s`}}>
                 <div className="card-tags">
-                  <span className="badge badge-source">{article.source || 'Unknown'}</span>
-                  <span className={`badge badge-sentiment ${article.sentiment}`}>
+                  <span className="badge badge-source" onClick={(e) => { e.stopPropagation(); setBadgeFilter(article.source); }}>
+                    {article.source || 'Unknown'}
+                  </span>
+                  <span className={`badge badge-sentiment ${article.sentiment}`} onClick={(e) => { e.stopPropagation(); setBadgeFilter(article.sentiment); }}>
                     {article.sentiment === 'negative' ? 'High Risk' : article.sentiment === 'positive' ? 'Opportunity' : 'Neutral'}
                   </span>
                 </div>
-                <h3 className="card-title">{article.title}</h3>
+                <h3 className="card-title" style={{marginTop: '1rem'}}>{article.title}</h3>
                 <p className="card-snippet">{article.content}</p>
                 <div className="card-footer">
                   <span>{article.ai_tags.join(' • ')}</span>
-                  <span>{article.published_at ? new Date(article.published_at).toLocaleDateString() : 'Just now'}</span>
+                  <a href={article.link} target="_blank" rel="noreferrer" style={{color: 'var(--accent)', textDecoration: 'none', fontWeight: 'bold'}}>
+                    Read Report →
+                  </a>
                 </div>
               </div>
             ))}
@@ -164,23 +301,38 @@ export default function Home() {
         )}
       </main>
 
-      {/* Article Detail Modal */}
-      {activeArticle && (
-        <div className="modal-overlay" onClick={() => setActiveArticle(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setActiveArticle(null)}>×</button>
-            <div className="modal-meta">
-              <span className="badge badge-source">{activeArticle.source}</span>
-              <span className={`badge badge-sentiment ${activeArticle.sentiment}`}>{activeArticle.sentiment.toUpperCase()}</span>
-            </div>
-            <h2 className="modal-title">{activeArticle.title}</h2>
-            <div className="modal-body">
-              {activeArticle.content}
-            </div>
-            <a href={activeArticle.link} target="_blank" rel="noreferrer" className="modal-link">
-              Read Full Intelligence Report
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg>
-            </a>
+      {/* Dynamic Tutorial Overlay */}
+      {tutorialStep > 0 && (
+        <div className="tutorial-overlay">
+          <div className="tutorial-box">
+            {tutorialStep === 1 && (
+              <>
+                <h2 className="tutorial-title">Welcome to NewsRadar</h2>
+                <p className="tutorial-text">
+                  This isn't a basic news app. This is a local-first, open-source intelligence dashboard. Let's show you the engine.
+                </p>
+                <button className="tutorial-btn" onClick={handleTutorialNext}>Next: Analytics</button>
+              </>
+            )}
+            {tutorialStep === 2 && (
+              <>
+                <h2 className="tutorial-title">Interactive Sentiment Chart</h2>
+                <p className="tutorial-text">
+                  Notice the Sentiment Velocity Chart at the top? It dynamically analyzes all ingested signals and categorizes them into Threat, Opportunity, and Neutral intelligence streams based on keywords.
+                </p>
+                <button className="tutorial-btn" onClick={handleTutorialNext}>Next: Interactive Badges</button>
+              </>
+            )}
+            {tutorialStep === 3 && (
+              <>
+                <h2 className="tutorial-title">Deep Filtering</h2>
+                <p className="tutorial-text">
+                  Every card has AI-generated badges. Click any badge (like "High Risk" or a specific source) to instantly pivot the entire dashboard to that filter.
+                  Also check out the Live Terminal Console in the bottom left, streaming simulated Rust ingestion logs!
+                </p>
+                <button className="tutorial-btn" onClick={handleTutorialNext}>Start Scanning</button>
+              </>
+            )}
           </div>
         </div>
       )}
