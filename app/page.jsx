@@ -41,7 +41,10 @@ export default function Home() {
     // Initial log
     setLogs([{ type: 'log-info', text: 'Initializing Rust Core connection...' }]);
 
-    fetch('/api/news')
+    // Use absolute URL in development to bypass need for rewrites
+    const apiUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000/api/news' : '/api/news';
+
+    fetch(apiUrl)
       .then(res => res.json())
       .then(data => {
         if (data.error) throw new Error(data.error);
