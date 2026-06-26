@@ -13,13 +13,14 @@ const sanitizeUrl = (url) => {
   return '#';
 };
 
-// Highly Original OSINT Intelligence Dataset
+// Highly Original OSINT Intelligence Dataset with custom cover images and source links
 const INTEL_FEED_DB = [
   {
     id: 1,
     title: "Critical Zero-Day In OpenSSL Library Discovered; Patch Released Immediately",
     source: "Hacker News / SecurityWeek",
     link: "https://www.securityweek.com/emergency-openssl-patch/",
+    image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500&auto=format&fit=crop&q=60",
     published_at: "10 mins ago",
     category: "Security & IT",
     content: "A high-severity memory leak vulnerability has been discovered in OpenSSL versions 3.0 to 3.2. If exploited, an attacker can bypass encryption layers. System administrators are urged to apply the 3.2.1 patch immediately.",
@@ -47,6 +48,7 @@ const INTEL_FEED_DB = [
     title: "EU Enforces Landmark AI Regulatory Rules: High-Risk Systems Mandate Audit",
     source: "Reuters / TechCrunch",
     link: "https://www.reuters.com/technology/eu-artificial-intelligence-act-enforcement-2026/",
+    image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=500&auto=format&fit=crop&q=60",
     published_at: "1 hr ago",
     category: "Geopolitics",
     content: "The European Union's Artificial Intelligence Act officially enters its compliance phase today. It outlaws public biometric surveillance and requires independent compliance audits for high-impact models.",
@@ -74,6 +76,7 @@ const INTEL_FEED_DB = [
     title: "Lawrence Livermore Lab Reports Net Energy Gain in Fusion Research",
     source: "MIT Tech Review / Nature",
     link: "https://www.nature.com/articles/d41586-026-fusion-ignition",
+    image: "https://images.unsplash.com/photo-1507668077129-56e32842fceb?w=500&auto=format&fit=crop&q=60",
     published_at: "3 hrs ago",
     category: "Science & Research",
     content: "National Ignition Facility researchers successfully achieved scientific energy breakeven (Q > 1.2) for the third time, generating more energy from fusion than the laser energy input.",
@@ -101,6 +104,7 @@ const INTEL_FEED_DB = [
     title: "Global Semiconductor Supply Chains Secure Alternate Sources for Critical Neon Gas",
     source: "Axios / Bloomberg",
     link: "https://www.bloomberg.com/news/articles/semiconductor-supply-neon-gas-facilities",
+    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&auto=format&fit=crop&q=60",
     published_at: "6 hrs ago",
     category: "Market & Finance",
     content: "In response to geopolitical trade restrictions, semiconductor manufacturers have successfully established alternative refining facilities in Japan and South Korea, shielding chip fabrication from supply shocks.",
@@ -141,6 +145,16 @@ export default function Home() {
 
   // AI Summary Switcher
   const [activeSummaryTab, setActiveSummaryTab] = useState('exec');
+
+  // 3D Card Flip States (flipped state keyed by card ID)
+  const [flippedCards, setFlippedCards] = useState({});
+  const toggleFlip = (e, id) => {
+    e.stopPropagation(); // Prevent card selection when flipping
+    setFlippedCards(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
   // Diagnostics and System Status
   const [diagnostics, setDiagnostics] = useState({
@@ -189,13 +203,18 @@ export default function Home() {
             const left = Math.floor(Math.sin(seed) * 30 + 40);
             const right = Math.floor(Math.cos(seed) * 25 + 30);
             const center = 100 - left - right;
+            const isIT = idx % 2 === 0;
             
             return {
               id: seed,
               title: item.title,
               source: item.source || "RSS Ingest",
+              link: item.link || "https://www.reuters.com",
+              image: isIT 
+                ? "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&auto=format&fit=crop&q=60" // Server Nodes
+                : "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60", // Geopolitics Globe
               published_at: item.published_at || "Recent",
-              category: idx % 2 === 0 ? "Security & IT" : "Geopolitics",
+              category: isIT ? "Security & IT" : "Geopolitics",
               content: item.content || "",
               sentiment: left > right ? "positive" : "negative",
               severityIndex: idx % 3 === 0 ? "ELEVATED" : "LOW",
@@ -629,40 +648,119 @@ ${selectedArticle.summaries.it}
             </div>
           </header>
 
-          <div className="news-stream custom-scroll">
-            <h2 className="news-stream-header">Ingested Intelligence Signals ({filtered.length})</h2>
-            
+          {/* Industry Standard News Feed - Grid of 3D Flash Cards */}
+          <div className="news-stream custom-scroll" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem', padding: '1.5rem 2rem' }}>
             {filtered.length === 0 ? (
-              <div style={{textAlign: 'center', padding: '3rem', color: 'var(--text-muted)'}}>
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
                 No signals matching your search criteria.
               </div>
             ) : (
               filtered.map(article => {
                 const totalBias = article.editorialLeanings.left + article.editorialLeanings.center + article.editorialLeanings.right;
+                const isFlipped = flippedCards[article.id] || false;
+                
                 return (
-                  <div 
-                    key={article.id} 
-                    className={`article-item ${selectedArticle?.id === article.id ? 'active' : ''}`}
-                    onClick={() => setSelectedArticle(article)}
-                  >
-                    <div className="item-meta">
-                      <div className="meta-left">
-                        <span className="source-badge">{article.source}</span>
-                        <span className="time-stamp">• {article.published_at}</span>
+                  <div key={article.id} className={`flash-card-container ${selectedArticle?.id === article.id ? 'active' : ''}`} style={{ height: '390px', marginBottom: 0 }}>
+                    <div className={`flash-card-inner ${isFlipped ? 'flipped' : ''}`}>
+                      
+                      {/* Front of the Flash Card */}
+                      <div 
+                        className="flash-card-front"
+                        onClick={() => setSelectedArticle(article)}
+                      >
+                        <img 
+                          src={article.image || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60"} 
+                          alt={article.title} 
+                          className="card-cover-image" 
+                          loading="lazy"
+                        />
+                        
+                        <div className="card-body-content">
+                          <div className="item-meta">
+                            <div className="meta-left">
+                              <span className="source-badge">{article.source}</span>
+                              <span className="time-stamp">• {article.published_at}</span>
+                            </div>
+                            <span className={`sentiment-dot-badge ${article.sentiment}`}>
+                              {article.sentiment === 'negative' ? 'Threat' : article.sentiment === 'positive' ? 'Opportunity' : 'Neutral'}
+                            </span>
+                          </div>
+
+                          <h3 className="item-title" style={{ 
+                            fontSize: '0.95rem', 
+                            lineClamp: 2, 
+                            display: '-webkit-box', 
+                            WebkitLineClamp: 2, 
+                            WebkitBoxOrient: 'vertical', 
+                            overflow: 'hidden',
+                            margin: '0.2rem 0'
+                          }}>{article.title}</h3>
+                          
+                          <p className="item-snippet" style={{ 
+                            fontSize: '0.78rem', 
+                            lineClamp: 2, 
+                            display: '-webkit-box', 
+                            WebkitLineClamp: 2, 
+                            WebkitBoxOrient: 'vertical', 
+                            overflow: 'hidden',
+                            marginBottom: '0.4rem'
+                          }}>{article.content}</p>
+
+                          {/* Sparkline bias representation */}
+                          <div className="bias-sparkline-container" style={{ margin: 'auto 0 0.5rem 0' }}>
+                            <div className="bias-spark left" style={{width: `${(article.editorialLeanings.left / totalBias) * 100}%`}}></div>
+                            <div className="bias-spark center" style={{width: `${(article.editorialLeanings.center / totalBias) * 100}%`}}></div>
+                            <div className="bias-spark right" style={{width: `${(article.editorialLeanings.right / totalBias) * 100}%`}}></div>
+                          </div>
+                          
+                          <button 
+                            className="flip-action-btn"
+                            onClick={(e) => toggleFlip(e, article.id)}
+                          >
+                            Quick Brief ⟳
+                          </button>
+                        </div>
                       </div>
-                      <span className={`sentiment-dot-badge ${article.sentiment}`}>
-                        {article.sentiment === 'negative' ? 'Threat' : article.sentiment === 'positive' ? 'Opportunity' : 'Neutral'}
-                      </span>
-                    </div>
 
-                    <h3 className="item-title">{article.title}</h3>
-                    <p className="item-snippet">{article.content}</p>
+                      {/* Back of the Flash Card (AI Summary) */}
+                      <div className="flash-card-back">
+                        <div className="back-header">
+                          <span className="back-title">AI Ingestion Briefing</span>
+                          <button 
+                            onClick={(e) => toggleFlip(e, article.id)}
+                            style={{ color: 'var(--text-muted)', fontWeight: 'bold', fontSize: '0.9rem' }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        
+                        <div className="back-content-scroll custom-scroll">
+                          <p style={{ fontWeight: 'bold', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--accent)' }}>
+                            [{article.category}] • Factuality: {article.factuality}
+                          </p>
+                          <p style={{ fontStyle: 'italic', marginBottom: '0.75rem', fontSize: '0.75rem', color: 'var(--text-main)', lineHeight: 1.3 }}>
+                            {article.title}
+                          </p>
+                          <ul style={{ listStyle: 'none', paddingLeft: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <li style={{ position: 'relative', paddingLeft: '0.75rem', fontSize: '0.75rem', lineHeight: 1.35 }}>
+                              <span style={{ color: 'var(--accent)', position: 'absolute', left: 0 }}>▪</span>
+                              <strong>Fact:</strong> {article.summaries.exec}
+                            </li>
+                            <li style={{ position: 'relative', paddingLeft: '0.75rem', fontSize: '0.75rem', lineHeight: 1.35 }}>
+                              <span style={{ color: 'var(--accent)', position: 'absolute', left: 0 }}>▪</span>
+                              <strong>Impact:</strong> {article.summaries.it}
+                            </li>
+                          </ul>
+                        </div>
+                        
+                        <button 
+                          className="flip-action-btn"
+                          onClick={(e) => toggleFlip(e, article.id)}
+                        >
+                          Return ⟳
+                        </button>
+                      </div>
 
-                    {/* Sparkline bias representation */}
-                    <div className="bias-sparkline-container">
-                      <div className="bias-spark left" style={{width: `${(article.editorialLeanings.left / totalBias) * 100}%`}}></div>
-                      <div className="bias-spark center" style={{width: `${(article.editorialLeanings.center / totalBias) * 100}%`}}></div>
-                      <div className="bias-spark right" style={{width: `${(article.editorialLeanings.right / totalBias) * 100}%`}}></div>
                     </div>
                   </div>
                 );
@@ -719,7 +817,7 @@ ${selectedArticle.summaries.it}
 
                 {/* Highly Original Feature: Source Diversity Stacked Bar */}
                 <div className="bias-card-title" style={{ marginTop: '1.25rem', marginBottom: '0.5rem' }}>Source Diversity Index</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                <div style={{ display: 'flex', justifycontent: 'space-between', fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.25rem' }}>
                   <span style={{ color: '#60a5fa' }}>Independent ({selectedArticle.sourceDiversity.independent}%)</span>
                   <span style={{ color: '#fb7185' }}>Corporate ({selectedArticle.sourceDiversity.corporate}%)</span>
                   <span style={{ color: '#34d399' }}>Public/State ({selectedArticle.sourceDiversity.statePublic}%)</span>
