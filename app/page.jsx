@@ -309,7 +309,7 @@ export default function Home() {
               <>
                 <h2 className="tutorial-title">Welcome to NewsRadar</h2>
                 <p className="tutorial-text">
-                  This isn't a basic news app. This is a local-first, open-source intelligence dashboard. Let's show you the engine.
+                  This isn&apos;t a basic news app. This is a local-first, open-source intelligence dashboard. Let&apos;s show you the engine.
                 </p>
                 <button className="tutorial-btn" onClick={handleTutorialNext}>Next: Analytics</button>
               </>
