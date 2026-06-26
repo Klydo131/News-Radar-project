@@ -1,0 +1,14 @@
+[package]
+name = "newsradar-core"
+version = "0.1.0"
+edition = "2021"
+description = "High-performance RSS ingestion engine for NewsRadar"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.11", features = ["json"] }
+rusqlite = "0.29"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+rss = "2.0"
