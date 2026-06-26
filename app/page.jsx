@@ -169,8 +169,15 @@ export default function Home() {
     inflowRate: '4.8 items/sec'
   });
 
+  // Settings & Help Modals states
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [themeScheme, setThemeScheme] = useState('space-blue');
+  const [layoutDensity, setLayoutDensity] = useState('comfortable');
+  const [refreshRate, setRefreshRate] = useState('realtime');
+  const [maxStories, setMaxStories] = useState(50);
+
   // UI styling state
-  const [theme, setTheme] = useState('dark');
   const [toastMessage, setToastMessage] = useState('');
 
   // Onboarding Tutorial State
@@ -185,7 +192,7 @@ export default function Home() {
   const actionCenterRef = useRef(null);
 
   // Overhaul States: feedViewMode and Keyboard Command Palette
-  const [feedViewMode, setFeedViewMode] = useState('list');
+  const [feedViewMode, setFeedViewMode] = useState('card');
   const [isCmdOpen, setIsCmdOpen] = useState(false);
   const [cmdSearch, setCmdSearch] = useState('');
   const [cmdSelectedIndex, setCmdSelectedIndex] = useState(0);
@@ -198,6 +205,8 @@ export default function Home() {
     { label: "Filter Category: Geopolitics", action: () => setActiveCategory('Geopolitics'), shortcut: "G" },
     { label: "Filter Category: Science & Research", action: () => setActiveCategory('Science & Research'), shortcut: "R" },
     { label: "Filter Category: Market & Finance", action: () => setActiveCategory('Market & Finance'), shortcut: "M" },
+    { label: "Open Settings Preferences Console", action: () => { setIsSettingsOpen(true); setIsCmdOpen(false); }, shortcut: "Ctrl+," },
+    { label: "Open Help & Documentation Manual", action: () => { setIsHelpOpen(true); setIsCmdOpen(false); }, shortcut: "?" },
     { label: "Guided Onboarding Walkthrough", action: () => { setTutorialStep(1); setIsCmdOpen(false); }, shortcut: "T" },
     { label: "Verify RSS Custom Sandbox", action: () => {
       const sandboxInput = document.querySelector('.sandbox-input');
@@ -232,10 +241,11 @@ export default function Home() {
     }
   };
 
-  // Register keyboard handler for Ctrl+K command palette
+  // Register keyboard handler for Ctrl+K, Ctrl+,, ?, and layout toggles
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      // Command palette: Ctrl+K
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCmdOpen(prev => {
           if (!prev) {
@@ -245,13 +255,38 @@ export default function Home() {
           return !prev;
         });
       }
+      
+      // Settings: Ctrl+,
+      if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+        e.preventDefault();
+        setIsSettingsOpen(prev => !prev);
+      }
+
+      // Help: ? (Shift + /)
+      if (e.key === '?' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        setIsHelpOpen(prev => !prev);
+      }
+
+      // Layout Switch: L for list, C for card
+      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        if (e.key.toLowerCase() === 'l') {
+          setFeedViewMode('list');
+        } else if (e.key.toLowerCase() === 'c') {
+          setFeedViewMode('card');
+        }
+      }
+
+      // Escape to close all overlays
       if (e.key === 'Escape') {
         setIsCmdOpen(false);
+        setIsSettingsOpen(false);
+        setIsHelpOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [filteredCommands]);
+  }, []);
 
 
   // Fetch real articles from local backend if available (fallback to local high-fidelity list)
@@ -337,10 +372,15 @@ export default function Home() {
       });
   }, []);
 
-  // Theme effect
+  // Apply theme class and layout density class dynamically to body
   useEffect(() => {
-    document.body.classList.toggle('light-mode', theme === 'light');
-  }, [theme]);
+    // Remove other theme classes
+    document.body.classList.remove('theme-space-blue', 'theme-cyber-amber', 'theme-radar-green', 'theme-polar-light');
+    document.body.classList.add(`theme-${themeScheme}`);
+    
+    // Toggle density class
+    document.body.classList.toggle('density-compact', layoutDensity === 'compact');
+  }, [themeScheme, layoutDensity]);
 
   // Dynamic Spotlight Tutorial Positioning
   useEffect(() => {
@@ -597,15 +637,23 @@ ${selectedArticle.summaries.it}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
               <span>Intelligence Center</span>
             </button>
-            <button className="nav-link" onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}>
+            <button className="nav-link" onClick={() => setThemeScheme(t => t === 'polar-light' ? 'space-blue' : 'polar-light')}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                {theme === 'dark' ? <circle cx="12" cy="12" r="5"></circle> : <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>}
+                {themeScheme === 'polar-light' ? <circle cx="12" cy="12" r="5"></circle> : <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>}
               </svg>
-              <span>{theme === 'dark' ? 'Light Theme' : 'Dark Theme'}</span>
+              <span>{themeScheme === 'polar-light' ? 'Dark Theme' : 'Light Theme'}</span>
+            </button>
+            <button className="nav-link" onClick={() => setIsSettingsOpen(true)}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              <span>System Settings</span>
+            </button>
+            <button className="nav-link" onClick={() => setIsHelpOpen(true)}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              <span>Help & Manual</span>
             </button>
             <button className="nav-link" onClick={() => setTutorialStep(1)}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-              <span>Guided Onboarding</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>Onboarding Help</span>
             </button>
 
             {/* Enterprise OSINT metadata tags */}
@@ -963,20 +1011,30 @@ ${selectedArticle.summaries.it}
               <div className="threat-map-card">
                 <div className="bias-card-title">Geopolitical Threat Hotspot Map</div>
                 <div className="map-container">
-                  {/* Simplified outline SVG of global continents */}
-                  <svg viewBox="0 0 100 80" className="map-svg" fill="none" stroke="currentColor">
+                  {/* Detailed vector world map with high-tech grid overlay */}
+                  <svg viewBox="0 0 100 80" className="map-svg" fill="none">
+                    {/* Grid Backdrop Lines */}
+                    <line x1="0" y1="20" x2="100" y2="20" className="map-grid-line" />
+                    <line x1="0" y1="40" x2="100" y2="40" className="map-grid-line" />
+                    <line x1="0" y1="60" x2="100" y2="60" className="map-grid-line" />
+                    <line x1="20" y1="0" x2="20" y2="80" className="map-grid-line" />
+                    <line x1="40" y1="0" x2="40" y2="80" className="map-grid-line" />
+                    <line x1="60" y1="0" x2="60" y2="80" className="map-grid-line" />
+                    <line x1="80" y1="0" x2="80" y2="80" className="map-grid-line" />
+
+                    {/* Continental Polygons with theme-adaptive fill and stroke */}
                     {/* North America */}
-                    <path d="M 8 18 L 28 15 L 34 32 L 20 40 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+                    <path d="M12,18 L18,10 L28,6 L38,8 L36,18 L28,20 L30,28 L24,34 L18,34 L12,24 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
                     {/* South America */}
-                    <path d="M 22 41 L 28 41 L 25 63 L 20 63 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+                    <path d="M22,36 L28,36 L30,42 L26,56 L20,62 L18,52 L20,44 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
                     {/* Greenland */}
-                    <path d="M 24 6 L 34 8 L 30 16 L 22 14 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+                    <path d="M30,4 L38,5 L36,12 L30,10 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
                     {/* Africa */}
-                    <path d="M 43 38 L 52 36 L 55 53 L 47 56 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+                    <path d="M42,32 L54,32 L56,38 L54,46 L48,54 L44,48 L40,42 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
                     {/* Eurasia */}
-                    <path d="M 40 14 L 80 16 L 78 33 L 52 38 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+                    <path d="M40,12 L50,8 L64,10 L78,8 L86,16 L88,26 L80,34 L72,36 L62,38 L50,30 L42,24 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
                     {/* Australia */}
-                    <path d="M 72 50 L 82 50 L 80 62 L 71 60 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+                    <path d="M74,48 L82,48 L84,54 L76,56 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
                   </svg>
                   {/* Pulsing pointer dot based on selected article coordinates */}
                   {selectedArticle.coordinates && (
@@ -1241,9 +1299,9 @@ ${selectedArticle.summaries.it}
           <div className="tutorial-backdrop"></div>
           <div className="tutorial-spotlight" style={spotlightStyle}></div>
           <div className="tutorial-tooltip" style={tooltipStyle}>
-            {spotlightStyle.display !== 'none' && tutorialStep === 1 && <div className="tutorial-pointer pointer-left"></div>}
-            {spotlightStyle.display !== 'none' && tutorialStep === 2 && <div className="tutorial-pointer pointer-left"></div>}
-            {spotlightStyle.display !== 'none' && tutorialStep === 3 && <div className="tutorial-pointer pointer-right"></div>}
+            {spotlightStyle.display !== 'none' && tutorialStep === 1 && <div className="tutorial-pointer pointer-right"></div>}
+            {spotlightStyle.display !== 'none' && tutorialStep === 2 && <div className="tutorial-pointer pointer-right"></div>}
+            {spotlightStyle.display !== 'none' && tutorialStep === 3 && <div className="tutorial-pointer pointer-left"></div>}
             {spotlightStyle.display !== 'none' && tutorialStep === 4 && <div className="tutorial-pointer pointer-bottom"></div>}
 
             <h3 className="tutorial-header">{tutorialMessages[tutorialStep]?.title}</h3>
@@ -1258,6 +1316,178 @@ ${selectedArticle.summaries.it}
               <button className="tutorial-btn" onClick={handleTutorialNext}>
                 {tutorialStep === 4 ? 'Complete' : 'Next'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings modal */}
+      {isSettingsOpen && (
+        <div className="modal-overlay" onClick={() => setIsSettingsOpen(false)}>
+          <div className="modal-container" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <span className="modal-title">System Settings Console</span>
+              <button className="modal-close-btn" onClick={() => setIsSettingsOpen(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div className="modal-sidebar">
+                <button className="modal-tab-btn active">Preferences</button>
+              </div>
+              <div className="modal-content-area">
+                <div className="settings-section-title">Ingestion Preferences</div>
+                <div className="settings-row">
+                  <label className="settings-label">Signal Refresh Rate</label>
+                  <select 
+                    className="settings-select" 
+                    value={refreshRate} 
+                    onChange={e => setRefreshRate(e.target.value)}
+                  >
+                    <option value="realtime">Real-time Stream</option>
+                    <option value="5m">5 Minute Ingest Poll</option>
+                    <option value="15m">15 Minute Ingest Poll</option>
+                  </select>
+                </div>
+                <div className="settings-row">
+                  <label className="settings-label">Max Inbound Stories</label>
+                  <select 
+                    className="settings-select" 
+                    value={maxStories} 
+                    onChange={e => setMaxStories(Number(e.target.value))}
+                  >
+                    <option value={20}>20 Signals</option>
+                    <option value={50}>50 Signals</option>
+                    <option value={100}>100 Signals</option>
+                  </select>
+                </div>
+
+                <div className="settings-section-title" style={{ marginTop: '0.75rem' }}>Interface Configurations</div>
+                <div className="settings-row">
+                  <label className="settings-label">Layout Density</label>
+                  <select 
+                    className="settings-select" 
+                    value={layoutDensity} 
+                    onChange={e => setLayoutDensity(e.target.value)}
+                  >
+                    <option value="comfortable">Comfortable (Standard)</option>
+                    <option value="compact">Compact Analyst Grid</option>
+                  </select>
+                </div>
+
+                <div className="settings-section-title" style={{ marginTop: '0.75rem' }}>Theme Console Schema</div>
+                <div className="theme-swatches-grid">
+                  <div 
+                    className={`theme-swatch-card ${themeScheme === 'space-blue' ? 'active' : ''}`}
+                    onClick={() => setThemeScheme('space-blue')}
+                  >
+                    <span className="theme-swatch-title" style={{ color: '#6366f1' }}>Space Blue</span>
+                    <div className="theme-swatch-preview">
+                      <div className="theme-color-pill" style={{ background: '#0b0f19' }}></div>
+                      <div className="theme-color-pill" style={{ background: '#6366f1' }}></div>
+                    </div>
+                  </div>
+                  <div 
+                    className={`theme-swatch-card ${themeScheme === 'cyber-amber' ? 'active' : ''}`}
+                    onClick={() => setThemeScheme('cyber-amber')}
+                  >
+                    <span className="theme-swatch-title" style={{ color: '#f59e0b' }}>Cyber Amber</span>
+                    <div className="theme-swatch-preview">
+                      <div className="theme-color-pill" style={{ background: '#060400' }}></div>
+                      <div className="theme-color-pill" style={{ background: '#f59e0b' }}></div>
+                    </div>
+                  </div>
+                  <div 
+                    className={`theme-swatch-card ${themeScheme === 'radar-green' ? 'active' : ''}`}
+                    onClick={() => setThemeScheme('radar-green')}
+                  >
+                    <span className="theme-swatch-title" style={{ color: '#10b981' }}>Radar Green</span>
+                    <div className="theme-swatch-preview">
+                      <div className="theme-color-pill" style={{ background: '#000802' }}></div>
+                      <div className="theme-color-pill" style={{ background: '#10b981' }}></div>
+                    </div>
+                  </div>
+                  <div 
+                    className={`theme-swatch-card ${themeScheme === 'polar-light' ? 'active' : ''}`}
+                    onClick={() => setThemeScheme('polar-light')}
+                  >
+                    <span className="theme-swatch-title" style={{ color: '#4f46e5' }}>Polar Light</span>
+                    <div className="theme-swatch-preview">
+                      <div className="theme-color-pill" style={{ background: '#f8fafc' }}></div>
+                      <div className="theme-color-pill" style={{ background: '#4f46e5' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Help modal */}
+      {isHelpOpen && (
+        <div className="modal-overlay" onClick={() => setIsHelpOpen(false)}>
+          <div className="modal-container" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <span className="modal-title">Help & Documentation</span>
+              <button className="modal-close-btn" onClick={() => setIsHelpOpen(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div className="modal-sidebar">
+                <button className="modal-tab-btn active">OSINT Cheatsheet</button>
+              </div>
+              <div className="modal-content-area">
+                <div className="settings-section-title">Keyboard Shortcuts</div>
+                <div className="help-keybind-list">
+                  <div className="help-keybind-row">
+                    <span>Command Center Console</span>
+                    <kbd>Ctrl + K</kbd>
+                  </div>
+                  <div className="help-keybind-row">
+                    <span>Open Preferences Settings</span>
+                    <kbd>Ctrl + ,</kbd>
+                  </div>
+                  <div className="help-keybind-row">
+                    <span>Toggle Help & Manual</span>
+                    <kbd>?</kbd>
+                  </div>
+                  <div className="help-keybind-row">
+                    <span>Switch Layout: Stream Feed</span>
+                    <kbd>L</kbd>
+                  </div>
+                  <div className="help-keybind-row">
+                    <span>Switch Layout: 3D Cards</span>
+                    <kbd>C</kbd>
+                  </div>
+                  <div className="help-keybind-row">
+                    <span>Close Active Overlay/Modal</span>
+                    <kbd>Esc</kbd>
+                  </div>
+                </div>
+
+                <div className="settings-section-title" style={{ marginTop: '0.75rem' }}>OSINT Terminology Manual</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  <div>
+                    <strong style={{ color: 'var(--text-main)' }}>Editorial Stance Analytics:</strong> Maps left/right political framing of active media coverage.
+                  </div>
+                  <div>
+                    <strong style={{ color: 'var(--text-main)' }}>Source Diversity Index:</strong> Tracks ownership patterns (Independent, Corporate, or State-controlled).
+                  </div>
+                  <div>
+                    <strong style={{ color: 'var(--text-main)' }}>Factuality Integrity:</strong> Semi-automated verification metrics scoring source reliability.
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--panel-border)', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button 
+                    className="action-btn primary" 
+                    onClick={() => {
+                      setTutorialStep(1);
+                      setIsHelpOpen(false);
+                    }}
+                  >
+                    Relaunch Guided Tutorial
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
