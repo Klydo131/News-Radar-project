@@ -702,16 +702,18 @@ ${selectedArticle.summaries.it}
               <span>RSS Ingestion Sandbox</span>
             </div>
             <form onSubmit={handleRssTest} className="sandbox-form">
-              <input 
-                type="text" 
-                className="sandbox-input" 
-                placeholder="Paste public RSS feed url..." 
-                value={customFeedUrl}
-                onChange={e => setCustomFeedUrl(e.target.value)}
-              />
-              <button type="submit" className="sandbox-btn">
-                {customFeedLoading ? '...' : 'Verify'}
-              </button>
+              <div className="sandbox-input-wrapper">
+                <input 
+                  type="text" 
+                  className="sandbox-input" 
+                  placeholder="Paste public RSS feed url..." 
+                  value={customFeedUrl}
+                  onChange={e => setCustomFeedUrl(e.target.value)}
+                />
+                <button type="submit" className="sandbox-btn">
+                  {customFeedLoading ? '...' : 'Verify'}
+                </button>
+              </div>
             </form>
 
             {customFeedError && (

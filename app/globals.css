@@ -268,27 +268,43 @@ input, select {
 
 .sandbox-form {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  width: 100%;
+}
+
+.sandbox-input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
 }
 
 .sandbox-input {
-  flex: 1;
+  width: 100%;
   background: rgba(0,0,0,0.2);
   border: 1px solid var(--panel-border);
   border-radius: 8px;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 4rem 0.5rem 0.75rem;
   color: var(--text-main);
   font-size: 0.8rem;
+  outline: none;
 }
 
 .sandbox-btn {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  bottom: 4px;
   background: var(--accent);
   color: #fff;
-  border-radius: 8px;
-  padding: 0.5rem 0.8rem;
-  font-size: 0.8rem;
+  border-radius: 6px;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
   font-weight: bold;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
 }
 
 .sandbox-btn:hover {
