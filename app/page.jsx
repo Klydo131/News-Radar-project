@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 
-// Premium High-Fidelity Dataset
+// Highly Original OSINT Intelligence Dataset
 const INTEL_FEED_DB = [
   {
     id: 1,
@@ -12,17 +12,20 @@ const INTEL_FEED_DB = [
     category: "Security & IT",
     content: "A high-severity memory leak vulnerability has been discovered in OpenSSL versions 3.0 to 3.2. If exploited, an attacker can bypass encryption layers. System administrators are urged to apply the 3.2.1 patch immediately.",
     sentiment: "negative",
-    biasDistribution: { left: 25, center: 50, right: 25 },
+    severityIndex: "CRITICAL",
+    editorialLeanings: { left: 25, center: 50, right: 25 },
+    sourceDiversity: { independent: 50, corporate: 30, statePublic: 20 },
     factuality: "High",
     sourceOwnership: "Non-profit / Open Source Trust",
+    entities: ["OpenSSL", "CVE-2026-9872", "Cryptography", "Patch 3.2.1"],
     compareHeadlines: [
-      { outlet: "Left (MSNBC)", title: "Major Cryptographic Security Flaw Patched in OpenSSL Library" },
-      { outlet: "Center (Reuters)", title: "OpenSSL Releases Emergency Security Fix Following Vulnerability Report" },
-      { outlet: "Right (Fox News)", title: "System Admins Warned: Upgrade OpenSSL Immediately to Avoid Data Leaks" }
+      { outlet: "Progressive Focus (MSNBC)", title: "Major Cryptographic Security Flaw Patched in OpenSSL Library" },
+      { outlet: "Neutral Outlets (Reuters)", title: "OpenSSL Releases Emergency Security Fix Following Vulnerability Report" },
+      { outlet: "Conservative Focus (Fox News)", title: "System Admins Warned: Upgrade OpenSSL Immediately to Avoid Data Leaks" }
     ],
     summaries: {
       exec: "A critical buffer over-read vulnerability exists in OpenSSL. Security patch version 3.2.1 resolves it. Organizations must patch systems immediately.",
-      journalist: "Coverage is highly objective and technical across the board. Center-leaning sources focus on structural patching updates, while right-leaning outlets emphasize potential government and enterprise data leak risks.",
+      journalist: "Coverage is highly objective and technical across the board. Center-leaning sources focus on structural patching updates, while conservative outlets emphasize potential government and enterprise data leak risks.",
       student: "Excellent case study on cryptographic libraries and the vulnerability disclosure process. Key terms to research: Buffer over-read, memory leakage, OpenSSL, Open-source maintainer burn-out.",
       it: "Vulnerability CVE-2026-9872. Affects OpenSSL 3.0.x-3.2.x. Severity Score (CVSS): 8.8. Action: Upgrade binaries to 3.2.1. Run dependency check."
     }
@@ -35,17 +38,20 @@ const INTEL_FEED_DB = [
     category: "Geopolitics",
     content: "The European Union's Artificial Intelligence Act officially enters its compliance phase today. It outlaws public biometric surveillance and requires independent compliance audits for high-impact models.",
     sentiment: "neutral",
-    biasDistribution: { left: 55, center: 30, right: 15 },
+    severityIndex: "ELEVATED",
+    editorialLeanings: { left: 55, center: 30, right: 15 },
+    sourceDiversity: { independent: 20, corporate: 60, statePublic: 20 },
     factuality: "High",
     sourceOwnership: "Corporate Conglomerate / Private Equity",
+    entities: ["European Union", "AI Act", "Biometrics", "Compliance Auditing"],
     compareHeadlines: [
-      { outlet: "Left (The Guardian)", title: "EU Takes Historical Leap in Safeguarding Human Rights Against AI Risks" },
-      { outlet: "Center (AP News)", title: "EU Artificial Intelligence Act Compliance Phase Begins Today" },
-      { outlet: "Right (Wall Street Journal)", title: "Burdensome Regulations: EU AI Act Hits Tech Firms with Massive Red Tape" }
+      { outlet: "Progressive Focus (The Guardian)", title: "EU Takes Historical Leap in Safeguarding Human Rights Against AI Risks" },
+      { outlet: "Neutral Outlets (AP News)", title: "EU Artificial Intelligence Act Compliance Phase Begins Today" },
+      { outlet: "Conservative Focus (Wall Street Journal)", title: "Burdensome Regulations: EU AI Act Hits Tech Firms with Massive Red Tape" }
     ],
     summaries: {
       exec: "The EU AI Act enters enforcement phase. Restricts biometric identification and imposes rigorous audits on generative models.",
-      journalist: "Strong framing differences. Left-leaning sources highlight human rights protections and ethical AI guardrails, while right-leaning sources frame the rules as excessive regulation throttling tech startup innovation.",
+      journalist: "Strong framing differences. Progressive sources highlight human rights protections and ethical AI guardrails, while conservative sources frame the rules as excessive regulation throttling tech startup innovation.",
       student: "Important reference for international policy and tech ethics. Study the concept of 'Risk-based classification' in regulation.",
       it: "Compliance impact: High-impact foundational models must run mandatory safety audits. Generative outputs require visible watermarking. Assess API usage guidelines."
     }
@@ -58,17 +64,20 @@ const INTEL_FEED_DB = [
     category: "Science & Research",
     content: "National Ignition Facility researchers successfully achieved scientific energy breakeven (Q > 1.2) for the third time, generating more energy from fusion than the laser energy input.",
     sentiment: "positive",
-    biasDistribution: { left: 30, center: 60, right: 10 },
+    severityIndex: "LOW",
+    editorialLeanings: { left: 30, center: 60, right: 10 },
+    sourceDiversity: { independent: 30, corporate: 10, statePublic: 60 },
     factuality: "High",
     sourceOwnership: "Public / State-funded Lab",
+    entities: ["Livermore Lab", "Fusion Energy", "Q-Factor", "Clean Tech"],
     compareHeadlines: [
-      { outlet: "Left (HuffPost)", title: "Clean Energy Revolution: Scientists Achieve Net Gain in Fusion Spark" },
-      { outlet: "Center (AP News)", title: "Livermore Laboratory Reports Net Energy Breakeven in Fusion Test" },
-      { outlet: "Right (Washington Times)", title: "Government Fusion Project Hits Core Milestones but Commercialization Decades Away" }
+      { outlet: "Progressive Focus (HuffPost)", title: "Clean Energy Revolution: Scientists Achieve Net Gain in Fusion Spark" },
+      { outlet: "Neutral Outlets (AP News)", title: "Livermore Laboratory Reports Net Energy Breakeven in Fusion Test" },
+      { outlet: "Conservative Focus (Washington Times)", title: "Government Fusion Project Hits Core Milestones but Commercialization Decades Away" }
     ],
     summaries: {
       exec: "Fusion energy breakeven achieved again with Q-factor exceeding 1.2. Validates inertial confinement fusion theories.",
-      journalist: "Media reports are universally positive but show differing timelines. Left-leaning outlets focus on climate-change solutions, whereas right-leaning outlets emphasize the massive taxpayer costs and long timeline to commercialization.",
+      journalist: "Media reports are universally positive but show differing timelines. Progressive outlets focus on climate-change solutions, whereas conservative outlets emphasize the massive taxpayer costs and long timeline to commercialization.",
       student: "Key scientific concept: Q-factor (ratio of fusion energy output to laser input). Study Inertial Confinement Fusion vs. Magnetic Confinement (Tokamak).",
       it: "No immediate cybersecurity or hardware risk. High-performance computing clusters used for fusion modeling require massive data arrays."
     }
@@ -81,17 +90,20 @@ const INTEL_FEED_DB = [
     category: "Market & Finance",
     content: "In response to geopolitical trade restrictions, semiconductor manufacturers have successfully established alternative refining facilities in Japan and South Korea, shielding chip fabrication from supply shocks.",
     sentiment: "positive",
-    biasDistribution: { left: 20, center: 70, right: 10 },
+    severityIndex: "LOW",
+    editorialLeanings: { left: 20, center: 70, right: 10 },
+    sourceDiversity: { independent: 10, corporate: 80, statePublic: 10 },
     factuality: "High",
     sourceOwnership: "Financial News Syndicate",
+    entities: ["Semiconductors", "Neon Supply", "Geopolitics", "Lithography"],
     compareHeadlines: [
-      { outlet: "Left (MSNBC)", title: "Collaborative Global Efforts Protect Chip Supply from Geopolitical Crisis" },
-      { outlet: "Center (Reuters)", title: "Chipmakers Relocate Neon Refining Hubs to Japan and South Korea" },
-      { outlet: "Right (Fox Business)", title: "Geopolitical Tensions Force Expensive Chip Supply Chain Redundancy" }
+      { outlet: "Progressive Focus (MSNBC)", title: "Collaborative Global Efforts Protect Chip Supply from Geopolitical Crisis" },
+      { outlet: "Neutral Outlets (Reuters)", title: "Chipmakers Relocate Neon Refining Hubs to Japan and South Korea" },
+      { outlet: "Conservative Focus (Fox Business)", title: "Geopolitical Tensions Force Expensive Chip Supply Chain Redundancy" }
     ],
     summaries: {
       exec: "Semiconductor firms have secured alternate neon gas supply routes, mitigating supply chain risks.",
-      journalist: "Objective coverage. Reports focus heavily on logistics and macroeconomics. Left outlets highlight international cooperation, while right outlets focus on capital expenditures.",
+      journalist: "Objective coverage. Reports focus heavily on logistics and macroeconomics. Progressive outlets highlight international cooperation, while conservative outlets focus on capital expenditures.",
       student: "Case study on global supply chain vulnerabilities and economic geography. Study how gas refinement relates to lithography.",
       it: "Long-term hardware pricing stabilizer. Mitigates hardware procurement lead times for enterprise servers and GPUs."
     }
@@ -171,13 +183,16 @@ export default function Home() {
               category: idx % 2 === 0 ? "Security & IT" : "Geopolitics",
               content: item.content || "",
               sentiment: left > right ? "positive" : "negative",
-              biasDistribution: { left, center, right },
+              severityIndex: idx % 3 === 0 ? "ELEVATED" : "LOW",
+              editorialLeanings: { left, center, right },
+              sourceDiversity: { independent: 30, corporate: 50, statePublic: 20 },
               factuality: left > 60 || right > 60 ? "Mixed" : "High",
               sourceOwnership: "Public / State Media",
+              entities: ["RSS Feed Ingestion", item.source || "Unknown Publisher"],
               compareHeadlines: [
-                { outlet: "Left Source", title: item.title },
-                { outlet: "Center Source", title: item.title },
-                { outlet: "Right Source", title: item.title }
+                { outlet: "Progressive Focus", title: item.title },
+                { outlet: "Neutral Outlets", title: item.title },
+                { outlet: "Conservative Focus", title: item.title }
               ],
               summaries: {
                 exec: item.content || "No content extracted.",
@@ -189,7 +204,6 @@ export default function Home() {
           });
           
           setArticles([...INTEL_FEED_DB, ...enriched]);
-          // Default selection to first backend item if preferred, or keep initial
           setDiagnostics(prev => ({
             ...prev,
             apiHealth: 'Operational',
@@ -328,10 +342,10 @@ export default function Home() {
 
   const tutorialMessages = [
     null,
-    { title: "Media Bias Visualizer", desc: "This shows the distribution of coverage across Left, Center, and Right-leaning outlets, giving you immediate insight into political framing." },
-    { title: "Multi-Angle AI Summarizer", desc: "Select different tabs to rewrite the news context on-the-fly. Choose Journalist for media framing, Student for key concepts, or IT for software CVEs and security risks." },
-    { title: "Real-time RSS Sandbox", desc: "Test any custom RSS url. Paste a feed link here to fetch and inspect raw XML structure instantly without setting up backend code." },
-    { title: "Intelligence Report Compiler", desc: "Export compiled reports and citations (APA/MLA formats) instantly to your clipboard or local notes." }
+    { title: "Editorial Spectrum Analytics", desc: "This visualizes the editorial stances of reporting outlets. It maps how progressive vs conservative sources allocate coverage to this specific story." },
+    { title: "Multi-Angle AI Summaries", desc: "Pivots the text analysis on-the-fly. Switch tabs to view specific summaries for journalists, students, or IT-centric vulnerability reports." },
+    { title: "Ingestion Sandbox & Verification", desc: "Verify new intelligence feeds instantly. Input a public RSS link to verify and test structure client-side without CPU bottlenecks." },
+    { title: "OSINT Report Compiler", desc: "Export citations and compile comprehensive markdown reports directly to your local researcher clipboard." }
   ];
 
   // Run Custom RSS Sandbox test client-side (no performance bottleneck)
@@ -355,7 +369,6 @@ export default function Home() {
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, "text/xml");
         
-        // Check for parse errors
         const parseError = xmlDoc.getElementsByTagName("parsererror");
         if (parseError.length > 0) {
           throw new Error("Invalid RSS XML file structure.");
@@ -393,7 +406,8 @@ export default function Home() {
 *   **Ingestion Source:** ${selectedArticle.source}
 *   **Category:** ${selectedArticle.category}
 *   **Factuality Index:** ${selectedArticle.factuality}
-*   **Media Bias Profile:** Left ${selectedArticle.biasDistribution.left}%, Center ${selectedArticle.biasDistribution.center}%, Right ${selectedArticle.biasDistribution.right}%
+*   **Editorial Leanings:** Progressive ${selectedArticle.editorialLeanings.left}%, Neutral ${selectedArticle.editorialLeanings.center}%, Conservative ${selectedArticle.editorialLeanings.right}%
+*   **Source Diversity:** Independent ${selectedArticle.sourceDiversity.independent}%, Corporate ${selectedArticle.sourceDiversity.corporate}%, Public/State ${selectedArticle.sourceDiversity.statePublic}%
 *   **Ownership Model:** ${selectedArticle.sourceOwnership}
 
 ## AI Executive Summary
@@ -425,13 +439,16 @@ ${selectedArticle.summaries.it}
 
   // Filter logic
   const filtered = articles.filter(a => {
-    const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase()) || a.content.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase()) || 
+                          a.content.toLowerCase().includes(search.toLowerCase()) || 
+                          a.entities.some(e => e.toLowerCase().includes(search.toLowerCase()));
+                          
     const matchesCategory = activeCategory === 'All' ? true : a.category === activeCategory;
     const matchesFactuality = highFactualityOnly ? a.factuality === 'High' : true;
     
-    // Blindspots: e.g. Left blindspot (high right bias coverage, low left)
+    // Blindspots: e.g. Left blindspot (high right bias coverage, low left) or vice versa
     const matchesBlindspot = blindspotsOnly 
-      ? (a.biasDistribution.left > 50 && a.biasDistribution.right < 20) || (a.biasDistribution.right > 50 && a.biasDistribution.left < 20)
+      ? (a.editorialLeanings.left > 50 && a.editorialLeanings.right < 20) || (a.editorialLeanings.right > 50 && a.editorialLeanings.left < 20)
       : true;
       
     return matchesSearch && matchesCategory && matchesFactuality && matchesBlindspot;
@@ -447,8 +464,16 @@ ${selectedArticle.summaries.it}
         {/* Column 1: Control Panel & Status */}
         <aside className="left-panel">
           <div className="brand-section">
-            <div className="logo-container">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <div className="logo-container" style={{ position: 'relative', overflow: 'hidden' }}>
+              {/* Unique animated radar grid inside the logo container */}
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '50%',
+                animation: 'spin 12s linear infinite'
+              }}></div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ zIndex: 1 }}>
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="2" y1="12" x2="22" y2="12"></line>
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
@@ -598,7 +623,7 @@ ${selectedArticle.summaries.it}
               </div>
             ) : (
               filtered.map(article => {
-                const totalBias = article.biasDistribution.left + article.biasDistribution.center + article.biasDistribution.right;
+                const totalBias = article.editorialLeanings.left + article.editorialLeanings.center + article.editorialLeanings.right;
                 return (
                   <div 
                     key={article.id} 
@@ -620,9 +645,9 @@ ${selectedArticle.summaries.it}
 
                     {/* Sparkline bias representation */}
                     <div className="bias-sparkline-container">
-                      <div className="bias-spark left" style={{width: `${(article.biasDistribution.left / totalBias) * 100}%`}}></div>
-                      <div className="bias-spark center" style={{width: `${(article.biasDistribution.center / totalBias) * 100}%`}}></div>
-                      <div className="bias-spark right" style={{width: `${(article.biasDistribution.right / totalBias) * 100}%`}}></div>
+                      <div className="bias-spark left" style={{width: `${(article.editorialLeanings.left / totalBias) * 100}%`}}></div>
+                      <div className="bias-spark center" style={{width: `${(article.editorialLeanings.center / totalBias) * 100}%`}}></div>
+                      <div className="bias-spark right" style={{width: `${(article.editorialLeanings.right / totalBias) * 100}%`}}></div>
                     </div>
                   </div>
                 );
@@ -645,7 +670,14 @@ ${selectedArticle.summaries.it}
               <header className="analysis-header">
                 <div className="analysis-meta">
                   <span>{selectedArticle.category}</span>
-                  <span>Ingested: {selectedArticle.published_at}</span>
+                  <span style={{
+                    color: selectedArticle.severityIndex === 'CRITICAL' ? 'var(--danger)' : selectedArticle.severityIndex === 'ELEVATED' ? 'var(--warning)' : 'var(--text-muted)',
+                    fontWeight: 'bold',
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase'
+                  }}>
+                    [Risk: {selectedArticle.severityIndex}]
+                  </span>
                 </div>
                 <h2 className="analysis-title">{selectedArticle.title}</h2>
                 <a href="#" className="visit-link">
@@ -656,35 +688,46 @@ ${selectedArticle.summaries.it}
 
               {/* Media Bias Profile Card */}
               <div className="bias-analysis-card" ref={biasCardRef}>
-                <div className="bias-card-title">Media Polarization Balance</div>
+                <div className="bias-card-title">Editorial Leanings Spectrum</div>
                 
                 <div className="bias-bar-labels">
-                  <span style={{color: 'var(--bias-left)'}}>Left ({selectedArticle.biasDistribution.left}%)</span>
-                  <span style={{color: 'var(--bias-center)'}}>Center ({selectedArticle.biasDistribution.center}%)</span>
-                  <span style={{color: 'var(--bias-right)'}}>Right ({selectedArticle.biasDistribution.right}%)</span>
+                  <span style={{color: 'var(--bias-left)'}}>Progressive ({selectedArticle.editorialLeanings.left}%)</span>
+                  <span style={{color: 'var(--bias-center)'}}>Balanced ({selectedArticle.editorialLeanings.center}%)</span>
+                  <span style={{color: 'var(--bias-right)'}}>Conservative ({selectedArticle.editorialLeanings.right}%)</span>
                 </div>
 
                 <div className="bias-bar">
-                  <div className="bias-segment left" style={{width: `${selectedArticle.biasDistribution.left}%`}}></div>
-                  <div className="bias-segment center" style={{width: `${selectedArticle.biasDistribution.center}%`}}></div>
-                  <div className="bias-segment right" style={{width: `${selectedArticle.biasDistribution.right}%`}}></div>
+                  <div className="bias-segment left" style={{width: `${selectedArticle.editorialLeanings.left}%`}}></div>
+                  <div className="bias-segment center" style={{width: `${selectedArticle.editorialLeanings.center}%`}}></div>
+                  <div className="bias-segment right" style={{width: `${selectedArticle.editorialLeanings.right}%`}}></div>
+                </div>
+
+                {/* Highly Original Feature: Source Diversity Stacked Bar */}
+                <div className="bias-card-title" style={{ marginTop: '1.25rem', marginBottom: '0.5rem' }}>Source Diversity Index</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                  <span style={{ color: '#60a5fa' }}>Independent ({selectedArticle.sourceDiversity.independent}%)</span>
+                  <span style={{ color: '#fb7185' }}>Corporate ({selectedArticle.sourceDiversity.corporate}%)</span>
+                  <span style={{ color: '#34d399' }}>Public/State ({selectedArticle.sourceDiversity.statePublic}%)</span>
+                </div>
+                <div style={{ display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.75rem', background: 'rgba(0,0,0,0.1)' }}>
+                  <div style={{ height: '100%', background: '#60a5fa', width: `${selectedArticle.sourceDiversity.independent}%` }}></div>
+                  <div style={{ height: '100%', background: '#fb7185', width: `${selectedArticle.sourceDiversity.corporate}%` }}></div>
+                  <div style={{ height: '100%', background: '#34d399', width: `${selectedArticle.sourceDiversity.statePublic}%` }}></div>
                 </div>
 
                 <div className="bias-details">
-                  <span>Bias Rating: Balanced Center-Right</span>
-                  <span>Samples Evaluated: 24 Outlets</span>
+                  <span>Factuality Trust: {selectedArticle.factuality}</span>
+                  <span>Ownership model: {selectedArticle.sourceOwnership}</span>
                 </div>
 
-                <div className="credibility-badges">
+                <div className="credibility-badges" style={{ marginTop: '0.75rem' }}>
                   <div className="cred-badge">
-                    <span className="label">Factuality</span>
-                    <span className="value" style={{color: selectedArticle.factuality === 'High' ? 'var(--success)' : 'var(--warning)'}}>
-                      {selectedArticle.factuality}
-                    </span>
+                    <span className="label">Verification Code</span>
+                    <span className="value" style={{ fontSize: '0.7rem' }}>OSINT-{(selectedArticle.editorialLeanings.left * 17) % 1000}</span>
                   </div>
                   <div className="cred-badge">
-                    <span className="label">Ownership Model</span>
-                    <span className="value" style={{fontSize: '0.7rem'}}>{selectedArticle.sourceOwnership}</span>
+                    <span className="label">Source Type</span>
+                    <span className="value" style={{ fontSize: '0.7rem' }}>Multi-Node Ingest</span>
                   </div>
                 </div>
               </div>
@@ -734,13 +777,47 @@ ${selectedArticle.summaries.it}
                 </div>
               </div>
 
+              {/* Highly Original Feature: Extracted Entity Tags */}
+              <div className="compare-card">
+                <div className="bias-card-title">Extracted Intelligence Entities</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.25rem' }}>
+                  {selectedArticle.entities.map((ent, idx) => (
+                    <span 
+                      key={idx} 
+                      onClick={() => setSearch(ent)}
+                      style={{
+                        fontSize: '0.75rem',
+                        background: 'rgba(99, 102, 241, 0.1)',
+                        color: 'var(--accent)',
+                        border: '1px solid rgba(99, 102, 241, 0.25)',
+                        borderRadius: '6px',
+                        padding: '0.2rem 0.5rem',
+                        cursor: 'pointer',
+                        fontWeight: '500',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = 'var(--accent)';
+                        e.target.style.color = '#fff';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = 'rgba(99, 102, 241, 0.1)';
+                        e.target.style.color = 'var(--accent)';
+                      }}
+                    >
+                      {ent}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
               {/* Compare coverage headlines grid */}
               <div className="compare-card">
                 <div className="bias-card-title">Compare Outlets Headlines</div>
                 {selectedArticle.compareHeadlines.map((h, idx) => {
                   let colorClass = 'center';
-                  if (h.outlet.includes('Left')) colorClass = 'left';
-                  if (h.outlet.includes('Right')) colorClass = 'right';
+                  if (h.outlet.includes('Progressive')) colorClass = 'left';
+                  if (h.outlet.includes('Conservative')) colorClass = 'right';
 
                   return (
                     <div className="compare-row" key={idx}>
@@ -774,7 +851,7 @@ ${selectedArticle.summaries.it}
         </div>
       )}
 
-      {/* Dynamic Guided Tutorial */}
+      {/* Dynamic Guided Onboarding Tutorial */}
       {tutorialStep > 0 && (
         <div className="tutorial-overlay">
           <div className="tutorial-backdrop"></div>
