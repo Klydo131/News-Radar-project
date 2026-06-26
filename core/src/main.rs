@@ -23,10 +23,49 @@ async fn main() -> Result<()> {
     )?;
     
     println!("Database initialized securely.");
-    println!("Ready to ingest feeds. (Data ingestion loop standing by)");
+    println!("Ingesting real-time intelligence...");
     
-    // Placeholder for actual ingestion loop
-    // loop { fetch_feeds().await; tokio::time::sleep(Duration::from_secs(3600)).await; }
+    // Hardcoded feeds for demonstration
+    let feeds = vec![
+        ("TechCrunch", "https://techcrunch.com/feed/"),
+        ("Reuters", "https://feeds.reuters.com/reuters/businessNews"),
+    ];
+
+    for (source, url) in feeds {
+        if let Err(e) = fetch_and_store(&conn, source, url).await {
+            eprintln!("Error fetching {}: {}", source, e);
+        }
+    }
     
+    println!("Initial ingestion complete. You can now use the interface.");
+    
+    Ok(())
+}
+
+async fn fetch_and_store(conn: &Connection, source: &str, url: &str) -> Result<()> {
+    let content = reqwest::get(url).await?.bytes().await?;
+    let channel = rss::Channel::read_from(&content[..])?;
+
+    for item in channel.items().iter().take(10) {
+        let title = item.title().unwrap_or("No Title");
+        let link = item.link().unwrap_or("");
+        let pub_date = item.pub_date().unwrap_or("");
+        let desc = item.description().unwrap_or("");
+        
+        // Simple HTML strip for description snippet
+        let clean_desc = desc.replace("<p>", "").replace("</p>", "").replace("<br>", "").replace("<br/>", "");
+        let snippet = if clean_desc.len() > 200 {
+            format!("{}...", &clean_desc[0..197])
+        } else {
+            clean_desc
+        };
+
+        // Ignore unique constraint errors (duplicate links) silently
+        let _ = conn.execute(
+            "INSERT INTO articles (title, link, published_at, source, content) VALUES (?1, ?2, ?3, ?4, ?5)",
+            params![title, link, pub_date, source, snippet],
+        );
+    }
+    println!("Successfully ingested data from {}", source);
     Ok(())
 }
