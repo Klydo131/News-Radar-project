@@ -243,7 +243,10 @@ export default function Home() {
         placement = 'top';
       }
 
-      if (target) {
+      // Check if target is visible in the current layout
+      const isVisible = target && target.getBoundingClientRect().width > 0;
+
+      if (isVisible) {
         const rect = target.getBoundingClientRect();
         const padding = 8;
         
@@ -252,32 +255,59 @@ export default function Home() {
           left: rect.left - padding + window.scrollX,
           width: rect.width + padding * 2,
           height: rect.height + padding * 2,
+          display: 'block'
         });
 
-        // Set tooltips
+        // Calculate responsive tooltip coordinates
+        let top = rect.bottom + 15;
+        let left = rect.left + (rect.width / 2) - 160;
+
         if (placement === 'left') {
-          setTooltipStyle({
-            top: rect.top + (rect.height / 2) - 100,
-            left: rect.left - 340,
-          });
+          if (rect.left > 340) {
+            top = rect.top + (rect.height / 2) - 100;
+            left = rect.left - 340;
+          } else {
+            top = rect.bottom + 15;
+            left = Math.max(10, rect.left);
+          }
         } else if (placement === 'right') {
-          setTooltipStyle({
-            top: rect.top,
-            left: rect.right + 20,
-          });
+          if (window.innerWidth - rect.right > 340) {
+            top = rect.top;
+            left = rect.right + 20;
+          } else {
+            top = rect.bottom + 15;
+            left = Math.max(10, rect.left - 160);
+          }
         } else if (placement === 'top') {
-          setTooltipStyle({
-            top: rect.top - 200,
-            left: rect.left + (rect.width / 2) - 160,
-          });
-        } else {
-          setTooltipStyle({
-            top: rect.bottom + 20,
-            left: rect.left + (rect.width / 2) - 160,
-          });
+          if (rect.top > 220) {
+            top = rect.top - 200;
+            left = rect.left + (rect.width / 2) - 160;
+          } else {
+            top = rect.bottom + 15;
+            left = rect.left + (rect.width / 2) - 160;
+          }
         }
+
+        // Keep inside screen boundaries
+        left = Math.max(10, Math.min(window.innerWidth - 330, left));
+        top = Math.max(10, Math.min(window.innerHeight - 250, top));
+
+        setTooltipStyle({
+          position: 'absolute',
+          top: `${top}px`,
+          left: `${left}px`,
+          transform: 'none',
+        });
       } else {
+        // Fallback: Hide spotlight and show tooltip centered like a modal
         setSpotlightStyle({ display: 'none' });
+        setTooltipStyle({
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          margin: 0,
+        });
       }
     };
 
@@ -750,10 +780,10 @@ ${selectedArticle.summaries.it}
           <div className="tutorial-backdrop"></div>
           <div className="tutorial-spotlight" style={spotlightStyle}></div>
           <div className="tutorial-tooltip" style={tooltipStyle}>
-            {tutorialStep === 1 && <div className="tutorial-pointer pointer-left"></div>}
-            {tutorialStep === 2 && <div className="tutorial-pointer pointer-left"></div>}
-            {tutorialStep === 3 && <div className="tutorial-pointer pointer-right"></div>}
-            {tutorialStep === 4 && <div className="tutorial-pointer pointer-bottom"></div>}
+            {spotlightStyle.display !== 'none' && tutorialStep === 1 && <div className="tutorial-pointer pointer-left"></div>}
+            {spotlightStyle.display !== 'none' && tutorialStep === 2 && <div className="tutorial-pointer pointer-left"></div>}
+            {spotlightStyle.display !== 'none' && tutorialStep === 3 && <div className="tutorial-pointer pointer-right"></div>}
+            {spotlightStyle.display !== 'none' && tutorialStep === 4 && <div className="tutorial-pointer pointer-bottom"></div>}
 
             <h3 className="tutorial-header">{tutorialMessages[tutorialStep]?.title}</h3>
             <p className="tutorial-desc">{tutorialMessages[tutorialStep]?.desc}</p>
