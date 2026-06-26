@@ -2,12 +2,24 @@
 
 import { useState, useEffect, useRef } from 'react';
 
+// Secure URL sanitizer to prevent DOM-based XSS exploits (javascript: or data: protocols)
+const sanitizeUrl = (url) => {
+  if (!url) return '#';
+  const trimmed = url.trim();
+  // Allow only standard web protocols: http:// or https://
+  if (/^(https?:\/\/)/i.test(trimmed)) {
+    return trimmed;
+  }
+  return '#';
+};
+
 // Highly Original OSINT Intelligence Dataset
 const INTEL_FEED_DB = [
   {
     id: 1,
     title: "Critical Zero-Day In OpenSSL Library Discovered; Patch Released Immediately",
     source: "Hacker News / SecurityWeek",
+    link: "https://www.securityweek.com/emergency-openssl-patch/",
     published_at: "10 mins ago",
     category: "Security & IT",
     content: "A high-severity memory leak vulnerability has been discovered in OpenSSL versions 3.0 to 3.2. If exploited, an attacker can bypass encryption layers. System administrators are urged to apply the 3.2.1 patch immediately.",
@@ -34,6 +46,7 @@ const INTEL_FEED_DB = [
     id: 2,
     title: "EU Enforces Landmark AI Regulatory Rules: High-Risk Systems Mandate Audit",
     source: "Reuters / TechCrunch",
+    link: "https://www.reuters.com/technology/eu-artificial-intelligence-act-enforcement-2026/",
     published_at: "1 hr ago",
     category: "Geopolitics",
     content: "The European Union's Artificial Intelligence Act officially enters its compliance phase today. It outlaws public biometric surveillance and requires independent compliance audits for high-impact models.",
@@ -60,6 +73,7 @@ const INTEL_FEED_DB = [
     id: 3,
     title: "Lawrence Livermore Lab Reports Net Energy Gain in Fusion Research",
     source: "MIT Tech Review / Nature",
+    link: "https://www.nature.com/articles/d41586-026-fusion-ignition",
     published_at: "3 hrs ago",
     category: "Science & Research",
     content: "National Ignition Facility researchers successfully achieved scientific energy breakeven (Q > 1.2) for the third time, generating more energy from fusion than the laser energy input.",
@@ -86,6 +100,7 @@ const INTEL_FEED_DB = [
     id: 4,
     title: "Global Semiconductor Supply Chains Secure Alternate Sources for Critical Neon Gas",
     source: "Axios / Bloomberg",
+    link: "https://www.bloomberg.com/news/articles/semiconductor-supply-neon-gas-facilities",
     published_at: "6 hrs ago",
     category: "Market & Finance",
     content: "In response to geopolitical trade restrictions, semiconductor manufacturers have successfully established alternative refining facilities in Japan and South Korea, shielding chip fabrication from supply shocks.",
@@ -557,7 +572,7 @@ ${selectedArticle.summaries.it}
                 <ul style={{marginTop: '0.4rem', listStyle: 'none', paddingLeft: 0}}>
                   {customFeedResults.preview.map((p, idx) => (
                     <li key={idx} style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.65rem'}}>
-                      • <a href={p.link} target="_blank" rel="noopener noreferrer" style={{color: 'var(--accent)'}}>{p.title}</a>
+                      • <a href={sanitizeUrl(p.link)} target="_blank" rel="noopener noreferrer" style={{color: 'var(--accent)'}}>{p.title}</a>
                     </li>
                   ))}
                 </ul>
@@ -680,7 +695,7 @@ ${selectedArticle.summaries.it}
                   </span>
                 </div>
                 <h2 className="analysis-title">{selectedArticle.title}</h2>
-                <a href="#" className="visit-link">
+                <a href={sanitizeUrl(selectedArticle.link || '#')} target="_blank" rel="noopener noreferrer" className="visit-link">
                   <span>Open raw intelligence source</span>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
                 </a>
