@@ -74,9 +74,6 @@ export default function Home() {
               </div>
               <h2 className="card-title">{article.title}</h2>
               <p className="card-snippet">{article.content}</p>
-              <div className="card-link">
-                Read full brief &rarr;
-              </div>
             </a>
           ))}
         </div>
