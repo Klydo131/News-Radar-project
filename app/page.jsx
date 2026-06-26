@@ -31,6 +31,7 @@ const INTEL_FEED_DB = [
     factuality: "High",
     sourceOwnership: "Non-profit / Open Source Trust",
     entities: ["OpenSSL", "CVE-2026-9872", "Cryptography", "Patch 3.2.1"],
+    coordinates: { x: 48, y: 26 },
     compareHeadlines: [
       { outlet: "Progressive Focus (MSNBC)", title: "Major Cryptographic Security Flaw Patched in OpenSSL Library" },
       { outlet: "Neutral Outlets (Reuters)", title: "OpenSSL Releases Emergency Security Fix Following Vulnerability Report" },
@@ -59,6 +60,7 @@ const INTEL_FEED_DB = [
     factuality: "High",
     sourceOwnership: "Corporate Conglomerate / Private Equity",
     entities: ["European Union", "AI Act", "Biometrics", "Compliance Auditing"],
+    coordinates: { x: 48, y: 26 },
     compareHeadlines: [
       { outlet: "Progressive Focus (The Guardian)", title: "EU Takes Historical Leap in Safeguarding Human Rights Against AI Risks" },
       { outlet: "Neutral Outlets (AP News)", title: "EU Artificial Intelligence Act Compliance Phase Begins Today" },
@@ -72,7 +74,7 @@ const INTEL_FEED_DB = [
     }
   },
   {
-    id: 3,
+    id: 4,
     title: "Lawrence Livermore Lab Reports Net Energy Gain in Fusion Research",
     source: "MIT Tech Review / Nature",
     link: "https://www.nature.com/articles/d41586-026-fusion-ignition",
@@ -87,6 +89,7 @@ const INTEL_FEED_DB = [
     factuality: "High",
     sourceOwnership: "Public / State-funded Lab",
     entities: ["Livermore Lab", "Fusion Energy", "Q-Factor", "Clean Tech"],
+    coordinates: { x: 22, y: 24 },
     compareHeadlines: [
       { outlet: "Progressive Focus (HuffPost)", title: "Clean Energy Revolution: Scientists Achieve Net Gain in Fusion Spark" },
       { outlet: "Neutral Outlets (AP News)", title: "Livermore Laboratory Reports Net Energy Breakeven in Fusion Test" },
@@ -100,7 +103,7 @@ const INTEL_FEED_DB = [
     }
   },
   {
-    id: 4,
+    id: 5,
     title: "Global Semiconductor Supply Chains Secure Alternate Sources for Critical Neon Gas",
     source: "Axios / Bloomberg",
     link: "https://www.bloomberg.com/news/articles/semiconductor-supply-neon-gas-facilities",
@@ -115,6 +118,7 @@ const INTEL_FEED_DB = [
     factuality: "High",
     sourceOwnership: "Financial News Syndicate",
     entities: ["Semiconductors", "Neon Supply", "Geopolitics", "Lithography"],
+    coordinates: { x: 75, y: 28 },
     compareHeadlines: [
       { outlet: "Progressive Focus (MSNBC)", title: "Collaborative Global Efforts Protect Chip Supply from Geopolitical Crisis" },
       { outlet: "Neutral Outlets (Reuters)", title: "Chipmakers Relocate Neon Refining Hubs to Japan and South Korea" },
@@ -128,6 +132,7 @@ const INTEL_FEED_DB = [
     }
   }
 ];
+;
 
 export default function Home() {
   const [articles, setArticles] = useState(INTEL_FEED_DB);
@@ -179,6 +184,76 @@ export default function Home() {
   const sandboxFormRef = useRef(null);
   const actionCenterRef = useRef(null);
 
+  // Overhaul States: feedViewMode and Keyboard Command Palette
+  const [feedViewMode, setFeedViewMode] = useState('list');
+  const [isCmdOpen, setIsCmdOpen] = useState(false);
+  const [cmdSearch, setCmdSearch] = useState('');
+  const [cmdSelectedIndex, setCmdSelectedIndex] = useState(0);
+
+  // Command palette configuration list
+  const commandOptions = [
+    { label: "Switch Layout: High-Density Stream", action: () => setFeedViewMode('list'), shortcut: "L" },
+    { label: "Switch Layout: Visual 3D cards", action: () => setFeedViewMode('card'), shortcut: "C" },
+    { label: "Filter Category: Security & IT Intel", action: () => setActiveCategory('Security & IT'), shortcut: "S" },
+    { label: "Filter Category: Geopolitics", action: () => setActiveCategory('Geopolitics'), shortcut: "G" },
+    { label: "Filter Category: Science & Research", action: () => setActiveCategory('Science & Research'), shortcut: "R" },
+    { label: "Filter Category: Market & Finance", action: () => setActiveCategory('Market & Finance'), shortcut: "M" },
+    { label: "Guided Onboarding Walkthrough", action: () => { setTutorialStep(1); setIsCmdOpen(false); }, shortcut: "T" },
+    { label: "Verify RSS Custom Sandbox", action: () => {
+      const sandboxInput = document.querySelector('.sandbox-input');
+      if (sandboxInput) sandboxInput.focus();
+      setIsCmdOpen(false);
+    }, shortcut: "V" },
+    { label: "Export Selected Report", action: () => { compileAndCopyReport(); setIsCmdOpen(false); }, shortcut: "E" }
+  ];
+
+  const filteredCommands = commandOptions.filter(opt => 
+    opt.label.toLowerCase().includes(cmdSearch.toLowerCase())
+  );
+
+  const handleCommandSelect = (index) => {
+    const cmd = filteredCommands[index];
+    if (cmd) {
+      cmd.action();
+      setIsCmdOpen(false);
+    }
+  };
+
+  const handleCommandKeyDown = (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setCmdSelectedIndex(prev => (prev + 1) % Math.max(1, filteredCommands.length));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setCmdSelectedIndex(prev => (prev - 1 + filteredCommands.length) % Math.max(1, filteredCommands.length));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      handleCommandSelect(cmdSelectedIndex);
+    }
+  };
+
+  // Register keyboard handler for Ctrl+K command palette
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsCmdOpen(prev => {
+          if (!prev) {
+            setCmdSearch('');
+            setCmdSelectedIndex(0);
+          }
+          return !prev;
+        });
+      }
+      if (e.key === 'Escape') {
+        setIsCmdOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [filteredCommands]);
+
+
   // Fetch real articles from local backend if available (fallback to local high-fidelity list)
   useEffect(() => {
     // Check if tutorial is completed
@@ -223,6 +298,7 @@ export default function Home() {
               factuality: left > 60 || right > 60 ? "Mixed" : "High",
               sourceOwnership: "Public / State Media",
               entities: ["RSS Feed Ingestion", item.source || "Unknown Publisher"],
+              coordinates: isIT ? { x: 48, y: 26 } : { x: 60, y: 40 },
               compareHeadlines: [
                 { outlet: "Progressive Focus", title: item.title },
                 { outlet: "Neutral Outlets", title: item.title },
@@ -497,24 +573,23 @@ ${selectedArticle.summaries.it}
         
         {/* Column 1: Control Panel & Status */}
         <aside className="left-panel">
-          <div className="brand-section">
-            <div className="logo-container" style={{ position: 'relative', overflow: 'hidden' }}>
-              {/* Unique animated radar grid inside the logo container */}
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '50%',
-                animation: 'spin 12s linear infinite'
-              }}></div>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ zIndex: 1 }}>
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="2" y1="12" x2="22" y2="12"></line>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          <div className="brand-section" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <div className="logo-container" style={{ position: 'relative', overflow: 'hidden', width: '38px', height: '38px', background: 'transparent', boxShadow: 'none' }}>
+              {/* Outer Ring & sweep SVG */}
+              <svg width="38" height="38" viewBox="0 0 40 40" style={{ position: 'absolute', inset: 0 }}>
+                <circle cx="20" cy="20" r="18" fill="none" stroke="rgba(99, 102, 241, 0.25)" strokeWidth="1" />
+                <circle cx="20" cy="20" r="12" fill="none" stroke="rgba(99, 102, 241, 0.15)" strokeWidth="1" />
+                <circle cx="20" cy="20" r="6" fill="none" stroke="rgba(99, 102, 241, 0.1)" strokeWidth="1" />
+                {/* Scanner sweep line */}
+                <line x1="20" y1="20" x2="20" y2="2" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" style={{ transformOrigin: '20px 20px', animation: 'spinSweep 4s linear infinite' }} />
               </svg>
+              {/* Blinking center dot */}
+              <div style={{ position: 'absolute', top: '17px', left: '17px', width: '6px', height: '6px', background: '#fff', borderRadius: '50%', boxShadow: '0 0 8px #fff' }}></div>
             </div>
-            <span className="brand-title">NewsRadar</span>
-            <span className="brand-badge">OSINT</span>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span className="brand-title" style={{ fontSize: '1.2rem', lineHeight: 1.1 }}>NewsRadar</span>
+              <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Open-Source OSINT</span>
+            </div>
           </div>
 
           <nav className="sidebar-nav">
@@ -532,6 +607,20 @@ ${selectedArticle.summaries.it}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
               <span>Guided Onboarding</span>
             </button>
+
+            {/* Enterprise OSINT metadata tags */}
+            <div className="osint-identity-grid">
+              <div className="osint-tag-pill">
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 6px var(--accent)' }}></span>
+                <span>v2.4.0-OSS</span>
+              </div>
+              <div className="osint-tag-pill">
+                <span>Node: Edge APAC-EAST</span>
+              </div>
+              <div className="osint-tag-pill">
+                <span>Sig Inbound: 4.8 Hz</span>
+              </div>
+            </div>
           </nav>
 
           {/* System Monitor Widget */}
@@ -603,15 +692,12 @@ ${selectedArticle.summaries.it}
         {/* Column 2: Feed Stream (Center) */}
         <section className="center-feed">
           <header className="feed-header">
-            <div className="search-bar-container">
+            <div className="search-bar-container" onClick={() => setIsCmdOpen(true)} style={{ cursor: 'pointer' }}>
               <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              <input 
-                type="text" 
-                className="search-input-field" 
-                placeholder="Search raw intelligence, source tags, or keywords..." 
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
+              <span className="search-input-field" style={{ color: search ? 'var(--text-main)' : 'var(--text-muted)', display: 'flex', alignItems: 'center', fontSize: '0.9rem' }}>
+                {search || "Search signals, tags, or press Ctrl+K to access Command Center..."}
+              </span>
+              <kbd style={{ fontSize: '0.65rem', background: 'var(--panel-border)', padding: '0.2rem 0.45rem', borderRadius: '4px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginLeft: 'auto', border: '1px solid rgba(255,255,255,0.05)' }}>Ctrl+K</kbd>
             </div>
             
             <div className="filters-row">
@@ -627,14 +713,14 @@ ${selectedArticle.summaries.it}
                 ))}
               </div>
 
-              <div className="switches-group">
+              <div className="switches-group" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
                 <label className="switch-label">
                   <input 
                     type="checkbox" 
                     checked={highFactualityOnly} 
                     onChange={e => setHighFactualityOnly(e.target.checked)}
                   />
-                  <span>Verified High Factuality</span>
+                  <span>High Factuality</span>
                 </label>
                 <label className="switch-label">
                   <input 
@@ -642,131 +728,205 @@ ${selectedArticle.summaries.it}
                     checked={blindspotsOnly} 
                     onChange={e => setBlindspotsOnly(e.target.checked)}
                   />
-                  <span>Blindspots Alerts</span>
+                  <span>Blindspots</span>
                 </label>
+
+                {/* View Layout Switcher */}
+                <div className="view-toggle-bar" style={{ marginLeft: '0.5rem' }}>
+                  <button 
+                    type="button"
+                    className={`view-toggle-btn ${feedViewMode === 'list' ? 'active' : ''}`}
+                    onClick={() => setFeedViewMode('list')}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    <span>Stream</span>
+                  </button>
+                  <button 
+                    type="button"
+                    className={`view-toggle-btn ${feedViewMode === 'card' ? 'active' : ''}`}
+                    onClick={() => setFeedViewMode('card')}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    <span>Cards</span>
+                  </button>
+                </div>
               </div>
             </div>
           </header>
 
-          {/* Industry Standard News Feed - Grid of 3D Flash Cards */}
-          <div className="news-stream custom-scroll" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem', padding: '1.5rem 2rem' }}>
-            {filtered.length === 0 ? (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                No signals matching your search criteria.
-              </div>
-            ) : (
-              filtered.map(article => {
-                const totalBias = article.editorialLeanings.left + article.editorialLeanings.center + article.editorialLeanings.right;
-                const isFlipped = flippedCards[article.id] || false;
-                
-                return (
-                  <div key={article.id} className={`flash-card-container ${selectedArticle?.id === article.id ? 'active' : ''}`} style={{ height: '390px', marginBottom: 0 }}>
-                    <div className={`flash-card-inner ${isFlipped ? 'flipped' : ''}`}>
-                      
-                      {/* Front of the Flash Card */}
-                      <div 
-                        className="flash-card-front"
-                        onClick={() => setSelectedArticle(article)}
-                      >
-                        <img 
-                          src={article.image || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60"} 
-                          alt={article.title} 
-                          className="card-cover-image" 
-                          loading="lazy"
-                        />
+          {/* Industry Standard News Feed - Toggleable View Mode */}
+          {feedViewMode === 'list' ? (
+            /* High-Density Analyst Stream (List View) */
+            <div className="news-stream custom-scroll analyst-stream" style={{ padding: '1.5rem 2rem' }}>
+              {filtered.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                  No signals matching your search criteria.
+                </div>
+              ) : (
+                filtered.map(article => {
+                  const totalBias = article.editorialLeanings.left + article.editorialLeanings.center + article.editorialLeanings.right;
+                  return (
+                    <div 
+                      key={article.id} 
+                      className={`list-item-row severity-${article.severityIndex} ${selectedArticle?.id === article.id ? 'active' : ''}`}
+                      onClick={() => setSelectedArticle(article)}
+                    >
+                      <div className="list-item-content">
+                        <div className="list-item-header">
+                          <span className="source-badge">{article.source}</span>
+                          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{article.published_at}</span>
+                        </div>
+                        <h3 className="list-item-title">{article.title}</h3>
+                        <p className="list-item-desc">{article.content}</p>
                         
-                        <div className="card-body-content">
-                          <div className="item-meta">
-                            <div className="meta-left">
-                              <span className="source-badge">{article.source}</span>
-                              <span className="time-stamp">• {article.published_at}</span>
-                            </div>
-                            <span className={`sentiment-dot-badge ${article.sentiment}`}>
-                              {article.sentiment === 'negative' ? 'Threat' : article.sentiment === 'positive' ? 'Opportunity' : 'Neutral'}
-                            </span>
-                          </div>
-
-                          <h3 className="item-title" style={{ 
-                            fontSize: '0.95rem', 
-                            lineClamp: 2, 
-                            display: '-webkit-box', 
-                            WebkitLineClamp: 2, 
-                            WebkitBoxOrient: 'vertical', 
-                            overflow: 'hidden',
-                            margin: '0.2rem 0'
-                          }}>{article.title}</h3>
-                          
-                          <p className="item-snippet" style={{ 
-                            fontSize: '0.78rem', 
-                            lineClamp: 2, 
-                            display: '-webkit-box', 
-                            WebkitLineClamp: 2, 
-                            WebkitBoxOrient: 'vertical', 
-                            overflow: 'hidden',
-                            marginBottom: '0.4rem'
-                          }}>{article.content}</p>
-
-                          {/* Sparkline bias representation */}
-                          <div className="bias-sparkline-container" style={{ margin: 'auto 0 0.5rem 0' }}>
+                        <div className="list-item-footer">
+                          {/* Sparkline bias */}
+                          <div className="bias-sparkline-container" style={{ width: '120px', height: '3px', margin: 0 }}>
                             <div className="bias-spark left" style={{width: `${(article.editorialLeanings.left / totalBias) * 100}%`}}></div>
                             <div className="bias-spark center" style={{width: `${(article.editorialLeanings.center / totalBias) * 100}%`}}></div>
                             <div className="bias-spark right" style={{width: `${(article.editorialLeanings.right / totalBias) * 100}%`}}></div>
+                          </div>
+                          
+                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.03)', padding: '0.1rem 0.3rem', borderRadius: '3px' }}>
+                              {article.category}
+                            </span>
+                            <span style={{ 
+                              fontSize: '0.65rem', 
+                              color: article.severityIndex === 'CRITICAL' ? 'var(--danger)' : article.severityIndex === 'ELEVATED' ? 'var(--warning)' : 'var(--success)', 
+                              fontWeight: 'bold' 
+                            }}>
+                              [{article.severityIndex}]
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          ) : (
+            /* Visual Briefing Layout (3D Flash Cards Grid) */
+            <div className="news-stream custom-scroll" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem', padding: '1.5rem 2rem' }}>
+              {filtered.length === 0 ? (
+                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                  No signals matching your search criteria.
+                </div>
+              ) : (
+                filtered.map(article => {
+                  const totalBias = article.editorialLeanings.left + article.editorialLeanings.center + article.editorialLeanings.right;
+                  const isFlipped = flippedCards[article.id] || false;
+                  
+                  return (
+                    <div key={article.id} className={`flash-card-container ${selectedArticle?.id === article.id ? 'active' : ''}`} style={{ height: '390px', marginBottom: 0 }}>
+                      <div className={`flash-card-inner ${isFlipped ? 'flipped' : ''}`}>
+                        
+                        {/* Front of the Flash Card */}
+                        <div 
+                          className="flash-card-front"
+                          onClick={() => setSelectedArticle(article)}
+                        >
+                          <img 
+                            src={article.image || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60"} 
+                            alt={article.title} 
+                            className="card-cover-image" 
+                            loading="lazy"
+                          />
+                          
+                          <div className="card-body-content">
+                            <div className="item-meta">
+                              <div className="meta-left">
+                                <span className="source-badge">{article.source}</span>
+                                <span className="time-stamp">• {article.published_at}</span>
+                              </div>
+                              <span className={`sentiment-dot-badge ${article.sentiment}`}>
+                                {article.sentiment === 'negative' ? 'Threat' : article.sentiment === 'positive' ? 'Opportunity' : 'Neutral'}
+                              </span>
+                            </div>
+
+                            <h3 className="item-title" style={{ 
+                              fontSize: '0.95rem', 
+                              lineClamp: 2, 
+                              display: '-webkit-box', 
+                              WebkitLineClamp: 2, 
+                              WebkitBoxOrient: 'vertical', 
+                              overflow: 'hidden',
+                              margin: '0.2rem 0'
+                            }}>{article.title}</h3>
+                            
+                            <p className="item-snippet" style={{ 
+                              fontSize: '0.78rem', 
+                              lineClamp: 2, 
+                              display: '-webkit-box', 
+                              WebkitLineClamp: 2, 
+                              WebkitBoxOrient: 'vertical', 
+                              overflow: 'hidden',
+                              marginBottom: '0.4rem'
+                            }}>{article.content}</p>
+
+                            {/* Sparkline bias representation */}
+                            <div className="bias-sparkline-container" style={{ margin: 'auto 0 0.5rem 0' }}>
+                              <div className="bias-spark left" style={{width: `${(article.editorialLeanings.left / totalBias) * 100}%`}}></div>
+                              <div className="bias-spark center" style={{width: `${(article.editorialLeanings.center / totalBias) * 100}%`}}></div>
+                              <div className="bias-spark right" style={{width: `${(article.editorialLeanings.right / totalBias) * 100}%`}}></div>
+                            </div>
+                            
+                            <button 
+                              className="flip-action-btn"
+                              onClick={(e) => toggleFlip(e, article.id)}
+                            >
+                              Quick Brief ⟳
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Back of the Flash Card (AI Summary) */}
+                        <div className="flash-card-back">
+                          <div className="back-header">
+                            <span className="back-title">AI Ingestion Briefing</span>
+                            <button 
+                              onClick={(e) => toggleFlip(e, article.id)}
+                              style={{ color: 'var(--text-muted)', fontWeight: 'bold', fontSize: '0.9rem' }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          
+                          <div className="back-content-scroll custom-scroll">
+                            <p style={{ fontWeight: 'bold', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--accent)' }}>
+                              [{article.category}] • Factuality: {article.factuality}
+                            </p>
+                            <p style={{ fontStyle: 'italic', marginBottom: '0.75rem', fontSize: '0.75rem', color: 'var(--text-main)', lineHeight: 1.3 }}>
+                              {article.title}
+                            </p>
+                            <ul style={{ listStyle: 'none', paddingLeft: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                              <li style={{ position: 'relative', paddingLeft: '0.75rem', fontSize: '0.75rem', lineHeight: 1.35 }}>
+                                <span style={{ color: 'var(--accent)', position: 'absolute', left: 0 }}>▪</span>
+                                <strong>Fact:</strong> {article.summaries.exec}
+                              </li>
+                              <li style={{ position: 'relative', paddingLeft: '0.75rem', fontSize: '0.75rem', lineHeight: 1.35 }}>
+                                <span style={{ color: 'var(--accent)', position: 'absolute', left: 0 }}>▪</span>
+                                <strong>Impact:</strong> {article.summaries.it}
+                              </li>
+                            </ul>
                           </div>
                           
                           <button 
                             className="flip-action-btn"
                             onClick={(e) => toggleFlip(e, article.id)}
                           >
-                            Quick Brief ⟳
+                            Return ⟳
                           </button>
                         </div>
-                      </div>
 
-                      {/* Back of the Flash Card (AI Summary) */}
-                      <div className="flash-card-back">
-                        <div className="back-header">
-                          <span className="back-title">AI Ingestion Briefing</span>
-                          <button 
-                            onClick={(e) => toggleFlip(e, article.id)}
-                            style={{ color: 'var(--text-muted)', fontWeight: 'bold', fontSize: '0.9rem' }}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                        
-                        <div className="back-content-scroll custom-scroll">
-                          <p style={{ fontWeight: 'bold', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--accent)' }}>
-                            [{article.category}] • Factuality: {article.factuality}
-                          </p>
-                          <p style={{ fontStyle: 'italic', marginBottom: '0.75rem', fontSize: '0.75rem', color: 'var(--text-main)', lineHeight: 1.3 }}>
-                            {article.title}
-                          </p>
-                          <ul style={{ listStyle: 'none', paddingLeft: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <li style={{ position: 'relative', paddingLeft: '0.75rem', fontSize: '0.75rem', lineHeight: 1.35 }}>
-                              <span style={{ color: 'var(--accent)', position: 'absolute', left: 0 }}>▪</span>
-                              <strong>Fact:</strong> {article.summaries.exec}
-                            </li>
-                            <li style={{ position: 'relative', paddingLeft: '0.75rem', fontSize: '0.75rem', lineHeight: 1.35 }}>
-                              <span style={{ color: 'var(--accent)', position: 'absolute', left: 0 }}>▪</span>
-                              <strong>Impact:</strong> {article.summaries.it}
-                            </li>
-                          </ul>
-                        </div>
-                        
-                        <button 
-                          className="flip-action-btn"
-                          onClick={(e) => toggleFlip(e, article.id)}
-                        >
-                          Return ⟳
-                        </button>
                       </div>
-
                     </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+                  );
+                })
+              )}
+            </div>
+          )}
         </section>
 
         {/* Column 3: Deep Analysis Panel (Right) */}
@@ -799,50 +959,161 @@ ${selectedArticle.summaries.it}
                 </a>
               </header>
 
-              {/* Media Bias Profile Card */}
+              {/* Geopolitical Threat Map Widget */}
+              <div className="threat-map-card">
+                <div className="bias-card-title">Geopolitical Threat Hotspot Map</div>
+                <div className="map-container">
+                  {/* Simplified outline SVG of global continents */}
+                  <svg viewBox="0 0 100 80" className="map-svg" fill="none" stroke="currentColor">
+                    {/* North America */}
+                    <path d="M 8 18 L 28 15 L 34 32 L 20 40 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+                    {/* South America */}
+                    <path d="M 22 41 L 28 41 L 25 63 L 20 63 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+                    {/* Greenland */}
+                    <path d="M 24 6 L 34 8 L 30 16 L 22 14 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+                    {/* Africa */}
+                    <path d="M 43 38 L 52 36 L 55 53 L 47 56 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+                    {/* Eurasia */}
+                    <path d="M 40 14 L 80 16 L 78 33 L 52 38 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+                    {/* Australia */}
+                    <path d="M 72 50 L 82 50 L 80 62 L 71 60 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8" />
+                  </svg>
+                  {/* Pulsing pointer dot based on selected article coordinates */}
+                  {selectedArticle.coordinates && (
+                    <div 
+                      className="map-pulse-dot"
+                      style={{
+                        left: `${selectedArticle.coordinates.x}%`,
+                        top: `${selectedArticle.coordinates.y}%`,
+                        transform: 'translate(-50%, -50%)'
+                      }}
+                    >
+                      <div className="map-pulse-ring"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Media Bias Profile Card with Circular Gauge */}
               <div className="bias-analysis-card" ref={biasCardRef}>
                 <div className="bias-card-title">Editorial Leanings Spectrum</div>
                 
-                <div className="bias-bar-labels">
-                  <span style={{color: 'var(--bias-left)'}}>Progressive ({selectedArticle.editorialLeanings.left}%)</span>
-                  <span style={{color: 'var(--bias-center)'}}>Balanced ({selectedArticle.editorialLeanings.center}%)</span>
-                  <span style={{color: 'var(--bias-right)'}}>Conservative ({selectedArticle.editorialLeanings.right}%)</span>
-                </div>
+                {(() => {
+                  const leftPct = selectedArticle.editorialLeanings.left || 0;
+                  const centerPct = selectedArticle.editorialLeanings.center || 0;
+                  const rightPct = selectedArticle.editorialLeanings.right || 0;
+                  const weightedScore = (leftPct * 0) + (centerPct * 50) + (rightPct * 100);
+                  const biasIndex = Math.round(weightedScore / 100);
+                  const needleRotation = (biasIndex / 100) * 180 - 90;
 
-                <div className="bias-bar">
-                  <div className="bias-segment left" style={{width: `${selectedArticle.editorialLeanings.left}%`}}></div>
-                  <div className="bias-segment center" style={{width: `${selectedArticle.editorialLeanings.center}%`}}></div>
-                  <div className="bias-segment right" style={{width: `${selectedArticle.editorialLeanings.right}%`}}></div>
-                </div>
+                  const factualityPct = selectedArticle.factuality === 'High' ? 95 : selectedArticle.factuality === 'Mixed' ? 60 : 30;
+                  const radialCircumference = 2 * Math.PI * 22;
+                  const radialOffset = radialCircumference * (1 - factualityPct / 100);
+                  const credibilityColor = selectedArticle.factuality === 'High' ? 'var(--success)' : selectedArticle.factuality === 'Mixed' ? 'var(--warning)' : 'var(--danger)';
 
-                {/* Highly Original Feature: Source Diversity Stacked Bar */}
-                <div className="bias-card-title" style={{ marginTop: '1.25rem', marginBottom: '0.5rem' }}>Source Diversity Index</div>
-                <div style={{ display: 'flex', justifycontent: 'space-between', fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-                  <span style={{ color: '#60a5fa' }}>Independent ({selectedArticle.sourceDiversity.independent}%)</span>
-                  <span style={{ color: '#fb7185' }}>Corporate ({selectedArticle.sourceDiversity.corporate}%)</span>
-                  <span style={{ color: '#34d399' }}>Public/State ({selectedArticle.sourceDiversity.statePublic}%)</span>
-                </div>
-                <div style={{ display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.75rem', background: 'rgba(0,0,0,0.1)' }}>
-                  <div style={{ height: '100%', background: '#60a5fa', width: `${selectedArticle.sourceDiversity.independent}%` }}></div>
-                  <div style={{ height: '100%', background: '#fb7185', width: `${selectedArticle.sourceDiversity.corporate}%` }}></div>
-                  <div style={{ height: '100%', background: '#34d399', width: `${selectedArticle.sourceDiversity.statePublic}%` }}></div>
-                </div>
+                  return (
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '0.5rem 0 1rem 0' }}>
+                        {/* Semi-circular dial gauge */}
+                        <svg width="200" height="110" viewBox="0 0 200 110" className="gauge-svg">
+                          <defs>
+                            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="var(--bias-left)" />
+                              <stop offset="50%" stopColor="var(--bias-center)" />
+                              <stop offset="100%" stopColor="var(--bias-right)" />
+                            </linearGradient>
+                          </defs>
+                          {/* Outer Gauge Track Arc */}
+                          <path 
+                            d="M 20 100 A 80 80 0 0 1 180 100" 
+                            fill="none" 
+                            stroke="rgba(255,255,255,0.05)" 
+                            strokeWidth="12" 
+                            strokeLinecap="round"
+                          />
+                          {/* Colored gradient arc */}
+                          <path 
+                            d="M 20 100 A 80 80 0 0 1 180 100" 
+                            fill="none" 
+                            stroke="url(#gaugeGradient)" 
+                            strokeWidth="12" 
+                            strokeLinecap="round"
+                            strokeDasharray="251.2"
+                            strokeDashoffset="0"
+                          />
+                          {/* Pointer Needle */}
+                          <g className="gauge-needle" style={{ transform: `rotate(${needleRotation}deg)`, transformOrigin: '100px 100px' }}>
+                            <line x1="100" y1="100" x2="100" y2="35" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                            <circle cx="100" cy="100" r="6" fill="#ffffff" />
+                          </g>
+                          {/* Score tag in center */}
+                          <text x="100" y="95" textAnchor="middle" fill="var(--text-main)" fontSize="10" fontWeight="bold" fontFamily="var(--font-mono)">
+                            {biasIndex < 40 ? "Left-Leaning" : biasIndex > 60 ? "Right-Leaning" : "Balanced"}
+                          </text>
+                        </svg>
+                      </div>
 
-                <div className="bias-details">
-                  <span>Factuality Trust: {selectedArticle.factuality}</span>
-                  <span>Ownership model: {selectedArticle.sourceOwnership}</span>
-                </div>
+                      <div className="bias-bar-labels" style={{ marginTop: '0.2rem', fontSize: '0.75rem' }}>
+                        <span style={{color: 'var(--bias-left)'}}>Left ({leftPct}%)</span>
+                        <span style={{color: 'var(--bias-center)'}}>Center ({centerPct}%)</span>
+                        <span style={{color: 'var(--bias-right)'}}>Right ({rightPct}%)</span>
+                      </div>
 
-                <div className="credibility-badges" style={{ marginTop: '0.75rem' }}>
-                  <div className="cred-badge">
-                    <span className="label">Verification Code</span>
-                    <span className="value" style={{ fontSize: '0.7rem' }}>OSINT-{(selectedArticle.editorialLeanings.left * 17) % 1000}</span>
-                  </div>
-                  <div className="cred-badge">
-                    <span className="label">Source Type</span>
-                    <span className="value" style={{ fontSize: '0.7rem' }}>Multi-Node Ingest</span>
-                  </div>
-                </div>
+                      {/* Highly Original Feature: Source Diversity Stacked Bar */}
+                      <div className="bias-card-title" style={{ marginTop: '1.25rem', marginBottom: '0.5rem' }}>Source Diversity Index</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                        <span style={{ color: '#60a5fa' }}>Independent ({selectedArticle.sourceDiversity.independent}%)</span>
+                        <span style={{ color: '#fb7185' }}>Corporate ({selectedArticle.sourceDiversity.corporate}%)</span>
+                        <span style={{ color: '#34d399' }}>Public/State ({selectedArticle.sourceDiversity.statePublic}%)</span>
+                      </div>
+                      <div style={{ display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.75rem', background: 'rgba(0,0,0,0.1)' }}>
+                        <div style={{ height: '100%', background: '#60a5fa', width: `${selectedArticle.sourceDiversity.independent}%` }}></div>
+                        <div style={{ height: '100%', background: '#fb7185', width: `${selectedArticle.sourceDiversity.corporate}%` }}></div>
+                        <div style={{ height: '100%', background: '#34d399', width: `${selectedArticle.sourceDiversity.statePublic}%` }}></div>
+                      </div>
+
+                      {/* Radial Credibility Meter */}
+                      <div className="radial-meter-container" style={{ marginTop: '1rem' }}>
+                        <div style={{ position: 'relative', width: '54px', height: '54px' }}>
+                          <svg className="radial-progress-svg" viewBox="0 0 50 50">
+                            <circle className="radial-circle-bg" cx="25" cy="25" r="22" />
+                            <circle 
+                              className="radial-circle-val" 
+                              cx="25" 
+                              cy="25" 
+                              r="22" 
+                              style={{ 
+                                strokeDasharray: radialCircumference, 
+                                strokeDashoffset: radialOffset,
+                                stroke: credibilityColor 
+                              }} 
+                            />
+                          </svg>
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}>
+                            {factualityPct}%
+                          </div>
+                        </div>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Factuality Integrity</span>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: credibilityColor }}>{selectedArticle.factuality} Quality</span>
+                          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Source Ownership: {selectedArticle.sourceOwnership}</span>
+                        </div>
+                      </div>
+
+                      <div className="credibility-badges" style={{ marginTop: '0.75rem' }}>
+                        <div className="cred-badge">
+                          <span className="label">Verification Code</span>
+                          <span className="value" style={{ fontSize: '0.7rem' }}>OSINT-{(selectedArticle.editorialLeanings.left * 17) % 1000}</span>
+                        </div>
+                        <div className="cred-badge">
+                          <span className="label">Source Type</span>
+                          <span className="value" style={{ fontSize: '0.7rem' }}>Multi-Node Ingest</span>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
               {/* Persona summaries tab switcher */}
@@ -987,6 +1258,57 @@ ${selectedArticle.summaries.it}
               <button className="tutorial-btn" onClick={handleTutorialNext}>
                 {tutorialStep === 4 ? 'Complete' : 'Next'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Keyboard Command Palette Overlay Modal */}
+      {isCmdOpen && (
+        <div className="cmd-palette-overlay" onClick={() => setIsCmdOpen(false)}>
+          <div className="cmd-palette-container" onClick={e => e.stopPropagation()}>
+            <div className="cmd-palette-input-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input 
+                type="text" 
+                className="cmd-palette-search" 
+                placeholder="Type command name or news keywords..." 
+                value={cmdSearch}
+                onChange={e => {
+                  setCmdSearch(e.target.value);
+                  setCmdSelectedIndex(0);
+                }}
+                onKeyDown={handleCommandKeyDown}
+                autoFocus
+              />
+              <span className="cmd-palette-shortcut" style={{ fontSize: '0.6rem' }}>ESC</span>
+            </div>
+            
+            <div className="cmd-palette-list custom-scroll">
+              {filteredCommands.length === 0 ? (
+                <div style={{ padding: '1rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  No matching actions or queries found.
+                </div>
+              ) : (
+                filteredCommands.map((cmd, idx) => (
+                  <div 
+                    key={idx}
+                    className={`cmd-palette-item ${cmdSelectedIndex === idx ? 'active' : ''}`}
+                    onClick={() => handleCommandSelect(idx)}
+                    onMouseEnter={() => setCmdSelectedIndex(idx)}
+                  >
+                    <span>{cmd.label}</span>
+                    {cmd.shortcut && (
+                      <kbd className="cmd-palette-shortcut">{cmd.shortcut}</kbd>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+            
+            <div className="cmd-palette-footer">
+              <span>Use ↑↓ to navigate, Enter to select</span>
+              <span>NewsRadar OSS Command Console</span>
             </div>
           </div>
         </div>
