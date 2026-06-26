@@ -311,6 +311,7 @@ input, select {
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
 .feed-header {
@@ -396,6 +397,8 @@ input, select {
 .news-stream {
   flex: 1;
   padding: 1.5rem 2rem;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .news-stream-header {
