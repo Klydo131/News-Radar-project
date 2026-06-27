@@ -106,6 +106,7 @@ input, select {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+  padding-top: 4rem; /* Generous breathing room space at the top of the viewport */
 }
 
 @media (max-width: 1300px) {
@@ -142,7 +143,7 @@ input, select {
   background: var(--panel-bg);
   backdrop-filter: blur(24px);
   border-right: 1px solid var(--panel-border);
-  padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -342,7 +343,7 @@ input, select {
 }
 
 .feed-header {
-  padding: 2.5rem 2rem 1.5rem 2rem;
+  padding: 1.5rem 2rem;
   border-bottom: 1px solid var(--panel-border);
   background: rgba(var(--bg-color), 0.5);
   backdrop-filter: blur(10px);
@@ -563,7 +564,7 @@ input, select {
 }
 
 .analysis-content {
-  padding: 2.5rem 2rem 2rem 2rem;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
