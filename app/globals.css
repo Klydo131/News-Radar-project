@@ -1261,9 +1261,9 @@ input, select {
 /* Premium Map Tooltips */
 .hotspot-tooltip {
   position: absolute;
-  bottom: 18px;
+  top: 18px;
   left: 50%;
-  transform: translateX(-50%) translateY(8px);
+  transform: translateX(-50%) translateY(-8px);
   width: 220px;
   background: var(--card-bg);
   border: 1.5px solid var(--panel-border);

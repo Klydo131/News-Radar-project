@@ -1905,7 +1905,7 @@ ${selectedArticle.summaries.it}
                         className={`map-hotspot-marker ${isSelected ? 'active' : ''}`}
                         style={{
                           position: 'absolute',
-                          left: `${article.coordinates.x}%`,
+                          left: `${article.coordinates.x / 2}%`,
                           top: `${article.coordinates.y}%`,
                           transform: 'translate(-50%, -50%)',
                           cursor: 'pointer',
