@@ -47,12 +47,22 @@ body.light-mode {
   padding: 0;
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
 body {
   background-color: var(--bg-color);
   color: var(--text-main);
   font-family: var(--font-body);
   line-height: 1.5;
-  overflow: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -332,7 +342,7 @@ input, select {
 }
 
 .feed-header {
-  padding: 1.5rem 2rem;
+  padding: 2.5rem 2rem 1.5rem 2rem;
   border-bottom: 1px solid var(--panel-border);
   background: rgba(var(--bg-color), 0.5);
   backdrop-filter: blur(10px);
@@ -553,7 +563,7 @@ input, select {
 }
 
 .analysis-content {
-  padding: 2rem;
+  padding: 2.5rem 2rem 2rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
