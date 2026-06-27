@@ -753,6 +753,7 @@ export default function Home() {
   useEffect(() => {
     if (tutorialStep === 0) {
       setSpotlightStyle({ display: 'none' });
+      window.scrollTo(0, 0); // Force scroll position reset when tutorial closes
       return;
     }
 
@@ -775,8 +776,15 @@ export default function Home() {
       }
 
       if (target) {
-        // Scroll the target element into view so the spotlight and tooltip align perfectly
-        target.scrollIntoView({ behavior: 'auto', block: 'center' });
+        // Scroll target within parent container instead of calling window scrollIntoView
+        const parentPanel = target.closest('.analysis-panel') || target.closest('.custom-scroll');
+        if (parentPanel) {
+          const parentRect = parentPanel.getBoundingClientRect();
+          const targetRect = target.getBoundingClientRect();
+          parentPanel.scrollTop += (targetRect.top - parentRect.top) - (parentRect.height / 2) + (targetRect.height / 2);
+        } else {
+          target.scrollIntoView({ behavior: 'auto', block: 'center' });
+        }
       }
 
       // Check if target is visible in the current layout
