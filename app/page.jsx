@@ -415,6 +415,43 @@ export default function Home() {
     const startPing = performance.now();
     const apiUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000/api/news' : '/api/news';
     
+    // Helper to extract real article images from RSS items or generate unique curated fallbacks
+    const extractRSSImage = (item) => {
+      if (item.thumbnail && typeof item.thumbnail === 'string' && item.thumbnail.startsWith('http') && !item.thumbnail.includes('reuters.com/resources/r/')) {
+        return item.thumbnail;
+      }
+      if (item.enclosure && item.enclosure.link && item.enclosure.link.startsWith('http')) {
+        return item.enclosure.link;
+      }
+      // Parse img tags from description/content
+      const descHtml = item.description || '';
+      const descImgMatch = descHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (descImgMatch && descImgMatch[1]) {
+        return descImgMatch[1];
+      }
+      const contentHtml = item.content || '';
+      const contentImgMatch = contentHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (contentImgMatch && contentImgMatch[1]) {
+        return contentImgMatch[1];
+      }
+      // Variety of curated high-quality fallbacks based on title hash so they never look identical
+      const fallbackImages = [
+        "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&auto=format&fit=crop&q=60", // Server nodes
+        "https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=500&auto=format&fit=crop&q=60", // Code screen
+        "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=500&auto=format&fit=crop&q=60", // Cyber lock
+        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60", // Geopolitics Globe
+        "https://images.unsplash.com/photo-1517483000871-1dbf64a6e1c6?w=500&auto=format&fit=crop&q=60", // Polar route
+        "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=500&auto=format&fit=crop&q=60", // Tech workspace
+        "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&auto=format&fit=crop&q=60", // Hardware servers
+        "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=500&auto=format&fit=crop&q=60", // Neural networks
+        "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=500&auto=format&fit=crop&q=60", // Finance stocks
+        "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=500&auto=format&fit=crop&q=60"  // Space orbit
+      ];
+      const titleStr = item.title || "";
+      const hash = titleStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      return fallbackImages[hash % fallbackImages.length];
+    };
+
     // Function to parse and format RSS items into rich threat signals
     const formatRSSItem = (item, idx, source, category) => {
       const seed = idx + (source === 'BBC' ? 200 : 100);
@@ -444,9 +481,7 @@ export default function Home() {
         title: item.title,
         source: source,
         link: item.link,
-        image: item.thumbnail || item.enclosure?.link || (category === 'Security & IT' 
-          ? "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&auto=format&fit=crop&q=60"
-          : "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60"),
+        image: extractRSSImage(item),
         published_at: item.pubDate ? new Date(item.pubDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + " today" : "Recent",
         category: category,
         content: item.description ? item.description.replace(/<[^>]*>/g, '').substring(0, 180) + '...' : item.content ? item.content.replace(/<[^>]*>/g, '').substring(0, 180) + '...' : "Live intelligence update.",
