@@ -406,6 +406,7 @@ export default function Home() {
 
   // Fetch real articles from local backend if available (fallback to local high-fidelity list)
   useEffect(() => {
+    window.scrollTo(0, 0);
     // Check if tutorial is completed
     const isTutorialDone = localStorage.getItem('nr_osint_tutorial_v1');
     if (!isTutorialDone) {

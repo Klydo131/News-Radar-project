@@ -64,6 +64,7 @@ body {
   font-family: var(--font-body);
   line-height: 1.5;
   transition: background-color 0.3s ease, color 0.3s ease;
+  padding-top: 4.5rem; /* Safe zone space at the top of the screen */
 }
 
 /* Background Mesh & Grid Overlay */
@@ -103,10 +104,9 @@ input, select {
 .app-layout {
   display: grid;
   grid-template-columns: 280px 1fr 450px;
-  height: 100vh;
+  height: calc(100vh - 4.5rem);
   width: 100vw;
   overflow: hidden;
-  padding-top: 4rem; /* Generous breathing room space at the top of the viewport */
 }
 
 @media (max-width: 1300px) {
