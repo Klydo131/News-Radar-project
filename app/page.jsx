@@ -417,6 +417,9 @@ export default function Home() {
     
     // Helper to extract real article images from RSS items or generate unique curated fallbacks
     const extractRSSImage = (item) => {
+      if (item.image && typeof item.image === 'string' && item.image.startsWith('http')) {
+        return item.image;
+      }
       if (item.thumbnail && typeof item.thumbnail === 'string' && item.thumbnail.startsWith('http') && !item.thumbnail.includes('reuters.com/resources/r/')) {
         return item.thumbnail;
       }

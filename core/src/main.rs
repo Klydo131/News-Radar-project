@@ -9,7 +9,7 @@ async fn main() -> Result<()> {
     // Connect to local SQLite DB
     let conn = Connection::open("../newsradar.db")?;
     
-    // Initialize schema
+    // Initialize schema with the 'image' column
     conn.execute(
         "CREATE TABLE IF NOT EXISTS articles (
             id INTEGER PRIMARY KEY,
@@ -17,7 +17,8 @@ async fn main() -> Result<()> {
             link TEXT NOT NULL UNIQUE,
             published_at TEXT,
             source TEXT,
-            content TEXT
+            content TEXT,
+            image TEXT
         )",
         [],
     )?;
@@ -60,10 +61,16 @@ async fn fetch_and_store(conn: &Connection, source: &str, url: &str) -> Result<(
             clean_desc
         };
 
+        // Try to get enclosure image URL
+        let mut img_url = String::new();
+        if let Some(enclosure) = item.enclosure() {
+            img_url = enclosure.url().to_string();
+        }
+
         // Ignore unique constraint errors (duplicate links) silently
         let _ = conn.execute(
-            "INSERT INTO articles (title, link, published_at, source, content) VALUES (?1, ?2, ?3, ?4, ?5)",
-            params![title, link, pub_date, source, snippet],
+            "INSERT INTO articles (title, link, published_at, source, content, image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            params![title, link, pub_date, source, snippet, img_url],
         );
     }
     println!("Successfully ingested data from {}", source);
