@@ -209,6 +209,24 @@ export default function Home() {
   const [cmdSearch, setCmdSearch] = useState('');
   const [cmdSelectedIndex, setCmdSelectedIndex] = useState(0);
 
+  // Nuclear scroll-lock effect: completely prevents browser window/body viewport auto-scrolling
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const forceScrollReset = () => {
+      if (window.scrollY !== 0 || window.scrollX !== 0) {
+        window.scrollTo(0, 0);
+      }
+    };
+    window.addEventListener('scroll', forceScrollReset, { passive: true });
+    window.addEventListener('resize', forceScrollReset, { passive: true });
+    document.addEventListener('focusin', forceScrollReset, { capture: true, passive: true });
+    return () => {
+      window.removeEventListener('scroll', forceScrollReset);
+      window.removeEventListener('resize', forceScrollReset);
+      document.removeEventListener('focusin', forceScrollReset);
+    };
+  }, [tutorialStep]);
+
   // Command palette configuration list
   const commandOptions = [
     { label: "Switch Layout: High-Density Stream", action: () => setFeedViewMode('list'), shortcut: "L" },
