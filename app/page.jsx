@@ -531,14 +531,31 @@ export default function Home() {
       .catch(err => {
         console.log("Local backend connection skipped or unavailable, loading cloud feeds directly from browser...");
         
-        const tcUrl = "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/feed/";
+        const decodeHtml = (html) => {
+          if (!html) return "";
+          return html
+            .replace(/&amp;/g, "&")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&#039;/g, "'")
+            .replace(/&#8217;/g, "'")
+            .replace(/&#8216;/g, "'")
+            .replace(/&#8220;/g, '"')
+            .replace(/&#8221;/g, '"')
+            .replace(/&#8230;/g, "...")
+            .replace(/&#038;/g, "&");
+        };
+
+        const tcUrl = "https://techcrunch.com/wp-json/wp/v2/posts?per_page=15&_embed";
         const bbcUrl = "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/world/rss.xml";
         
         Promise.all([
-          fetch(tcUrl).then(r => r.json()).catch(() => ({ status: 'fail' })),
+          fetch(tcUrl).then(r => r.json()).catch(() => []),
           fetch(bbcUrl).then(r => r.json()).catch(() => ({ status: 'fail' }))
         ]).then(([tcData, bbcData]) => {
-          let tcItems = (tcData.status === 'ok' && Array.isArray(tcData.items)) ? tcData.items : [];
+          let tcItems = Array.isArray(tcData) ? tcData : [];
           let bbcItems = (bbcData.status === 'ok' && Array.isArray(bbcData.items)) ? bbcData.items : [];
           
           if (tcItems.length === 0 && bbcItems.length === 0) {
@@ -551,8 +568,40 @@ export default function Home() {
             return;
           }
 
-          const tcEnriched = tcItems.map((item, idx) => formatRSSItem(item, idx, "TechCrunch", "Security & IT"));
-          const bbcEnriched = bbcItems.map((item, idx) => formatRSSItem(item, idx, "BBC", "Geopolitics"));
+          const tcEnriched = tcItems.map((post, idx) => {
+            let imgUrl = "";
+            if (post._embedded && post._embedded['wp:featuredmedia'] && post._embedded['wp:featuredmedia'][0]) {
+              imgUrl = post._embedded['wp:featuredmedia'][0].source_url;
+            }
+            
+            const rawTitle = post.title?.rendered || "TechCrunch Update";
+            const cleanTitle = decodeHtml(rawTitle.replace(/<[^>]*>/g, ''));
+            
+            const rawDesc = post.excerpt?.rendered || post.content?.rendered || "";
+            const cleanDesc = decodeHtml(rawDesc.replace(/<[^>]*>/g, ''));
+            
+            const dummyItem = {
+              title: cleanTitle,
+              link: post.link,
+              thumbnail: imgUrl,
+              pubDate: post.date_gmt || post.date,
+              description: cleanDesc,
+              content: cleanDesc
+            };
+            return formatRSSItem(dummyItem, idx, "TechCrunch", "Security & IT");
+          });
+          
+          const bbcEnriched = bbcItems.map((item, idx) => {
+            const cleanTitle = decodeHtml(item.title || "");
+            const cleanDesc = decodeHtml(item.description || "");
+            const cleanedItem = {
+              ...item,
+              title: cleanTitle,
+              description: cleanDesc,
+              content: cleanDesc
+            };
+            return formatRSSItem(cleanedItem, idx, "BBC", "Geopolitics");
+          });
           
           const merged = [];
           const maxLen = Math.max(tcEnriched.length, bbcEnriched.length);
