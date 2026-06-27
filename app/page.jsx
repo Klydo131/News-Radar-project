@@ -1083,10 +1083,44 @@ ${selectedArticle.summaries.it}
                     >
                       <div className="list-item-content">
                         <div className="list-item-header">
-                          <span className="source-badge">{article.source}</span>
+                          <a 
+                            href={sanitizeUrl(article.link || '#')} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="source-badge"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ 
+                              display: 'inline-flex', 
+                              alignItems: 'center', 
+                              gap: '0.25rem',
+                              textDecoration: 'none',
+                              color: 'var(--accent)',
+                              background: 'rgba(99, 102, 241, 0.1)',
+                              border: '1px solid rgba(99, 102, 241, 0.2)',
+                              borderRadius: '4px',
+                              padding: '0.15rem 0.4rem',
+                              fontWeight: 'bold',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <span>{article.source}</span>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                          </a>
                           <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{article.published_at}</span>
                         </div>
-                        <h3 className="list-item-title">{article.title}</h3>
+                        <h3 className="list-item-title">
+                          <a 
+                            href={sanitizeUrl(article.link || '#')} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                            className="hover-underline"
+                          >
+                            <span>{article.title}</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.6 }}><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                          </a>
+                        </h3>
                         <p className="list-item-desc">{article.content}</p>
                         
                         <div className="list-item-footer">
@@ -1147,7 +1181,29 @@ ${selectedArticle.summaries.it}
                           <div className="card-body-content">
                             <div className="item-meta">
                               <div className="meta-left">
-                                <span className="source-badge">{article.source}</span>
+                                <a 
+                                  href={sanitizeUrl(article.link || '#')} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="source-badge"
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{ 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    gap: '0.25rem',
+                                    textDecoration: 'none',
+                                    color: 'var(--accent)',
+                                    background: 'rgba(99, 102, 241, 0.1)',
+                                    border: '1px solid rgba(99, 102, 241, 0.2)',
+                                    borderRadius: '4px',
+                                    padding: '0.15rem 0.4rem',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  <span>{article.source}</span>
+                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                </a>
                                 <span className="time-stamp">• {article.published_at}</span>
                               </div>
                               <span className={`sentiment-dot-badge ${article.sentiment}`}>
@@ -1157,13 +1213,27 @@ ${selectedArticle.summaries.it}
 
                             <h3 className="item-title" style={{ 
                               fontSize: '0.95rem', 
-                              lineClamp: 2, 
-                              display: '-webkit-box', 
-                              WebkitLineClamp: 2, 
-                              WebkitBoxOrient: 'vertical', 
-                              overflow: 'hidden',
                               margin: '0.2rem 0'
-                            }}>{article.title}</h3>
+                            }}>
+                              <a 
+                                href={sanitizeUrl(article.link || '#')} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                style={{ 
+                                  textDecoration: 'none', 
+                                  color: 'inherit',
+                                  display: '-webkit-box', 
+                                  lineClamp: 2, 
+                                  WebkitLineClamp: 2, 
+                                  WebkitBoxOrient: 'vertical', 
+                                  overflow: 'hidden'
+                                }}
+                                className="hover-underline"
+                              >
+                                {article.title} ↗
+                              </a>
+                            </h3>
                             
                             <p className="item-snippet" style={{ 
                               fontSize: '0.78rem', 
@@ -1290,19 +1360,7 @@ ${selectedArticle.summaries.it}
                     <line x1="160" y1="0" x2="160" y2="100" className="map-grid-line" />
                     <line x1="180" y1="0" x2="180" y2="100" className="map-grid-line" />
 
-                    {/* Continental Polygons with theme-adaptive fill and stroke */}
-                    {/* North America */}
-                    <path d="M10,25 L15,18 L25,15 L35,10 L50,8 L65,10 L70,18 L65,22 L72,25 L68,32 L60,35 L62,45 L58,48 L50,45 L52,52 L48,58 L44,58 L46,48 L40,45 L35,45 L30,38 L22,38 L20,32 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
-                    {/* South America */}
-                    <path d="M48,58 L55,58 L65,60 L72,62 L75,66 L70,72 L62,80 L58,88 L52,95 L49,95 L50,86 L46,76 L44,68 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
-                    {/* Greenland */}
-                    <path d="M68,12 L80,5 L85,8 L82,18 L74,18 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
-                    {/* Africa */}
-                    <path d="M90,50 L98,44 L110,42 L120,44 L125,48 L130,58 L125,64 L120,72 L118,80 L115,88 L110,88 L110,78 L104,70 L98,62 L90,56 Z M130,72 L134,70 L132,82 L128,80 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
-                    {/* Eurasia */}
-                    <path d="M90,42 L94,36 L90,30 L98,30 L102,15 L108,12 L112,22 L118,24 L122,18 L135,22 L145,20 L155,18 L170,15 L185,10 L188,20 L186,30 L180,40 L176,38 L172,44 L166,50 L162,46 L158,52 L154,48 L150,52 L148,46 L142,42 L138,52 L134,52 L132,46 L126,44 L122,46 L116,44 L112,40 L105,42 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
-                    {/* Australia & NZ */}
-                    <path d="M160,72 L172,68 L182,72 L185,78 L180,84 L168,84 L162,78 Z M188,85 L192,82 L190,92 Z" fill="rgba(99, 102, 241, 0.04)" stroke="var(--panel-border)" strokeWidth="0.8" />
+
                   {/* Detailed realistic country vector shapes */}
                     <g>
                         <path id="_somaliland" d="M 115.676,55.563 l 0.615,0.419 l 0.182,-0.009 l 1.528,-0.525 l 0.173,0.559 l -0.122,0.472 l -0.330,0.262 l -0.825,-0.053 l -1.181,-0.725 L 115.676,55.563 L 115.676,55.563 z" fill="rgba(99, 102, 241, 0.03)" stroke="rgba(255, 255, 255, 0.08)" strokeWidth="0.35" />
@@ -1695,19 +1753,86 @@ ${selectedArticle.summaries.it}
                         <path id="zw" d="M 107.974,68.721 l 1.353,1.528 l 1.037,0.264 l 0.695,-1.090 l -0.054,-1.444 l -1.128,-0.582 l -0.424,0.192 l -0.631,0.964 l -0.875,-0.009 L 107.974,68.721 L 107.974,68.721 z" fill="rgba(99, 102, 241, 0.03)" stroke="rgba(255, 255, 255, 0.08)" strokeWidth="0.35" />
                     </g>
 </svg>
-                  {/* Pulsing pointer dot based on selected article coordinates */}
-                  {selectedArticle.coordinates && (
-                    <div 
-                      className="map-pulse-dot"
-                      style={{
-                        left: `${selectedArticle.coordinates.x}%`,
-                        top: `${selectedArticle.coordinates.y}%`,
-                        transform: 'translate(-50%, -50%)'
-                      }}
-                    >
-                      <div className="map-pulse-ring"></div>
-                    </div>
-                  )}
+                  {/* Interactive Hotspot Dots for all filtered articles */}
+                  {filtered.map(article => {
+                    if (!article.coordinates) return null;
+                    const isSelected = selectedArticle?.id === article.id;
+                    const severityColor = article.severityIndex === 'CRITICAL' 
+                      ? 'var(--danger)' 
+                      : article.severityIndex === 'ELEVATED' 
+                      ? 'var(--warning)' 
+                      : 'var(--accent)';
+                    
+                    return (
+                      <div 
+                        key={`hotspot-${article.id}`}
+                        className={`map-hotspot-marker ${isSelected ? 'active' : ''}`}
+                        style={{
+                          position: 'absolute',
+                          left: `${article.coordinates.x}%`,
+                          top: `${article.coordinates.y}%`,
+                          transform: 'translate(-50%, -50%)',
+                          cursor: 'pointer',
+                          zIndex: isSelected ? 15 : 10
+                        }}
+                        onClick={() => setSelectedArticle(article)}
+                      >
+                        <div 
+                          className="hotspot-dot"
+                          style={{
+                            width: isSelected ? '12px' : '7px',
+                            height: isSelected ? '12px' : '7px',
+                            borderRadius: '50%',
+                            background: severityColor,
+                            boxShadow: `0 0 8px ${severityColor}`,
+                            border: '1.5px solid rgba(255, 255, 255, 0.85)',
+                            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+                          }}
+                        ></div>
+                        {isSelected && (
+                          <div 
+                            className="map-pulse-ring" 
+                            style={{ 
+                              borderColor: severityColor,
+                              position: 'absolute',
+                              inset: '-8px',
+                              borderWidth: '2px',
+                              borderStyle: 'solid',
+                              borderRadius: '50%',
+                              animation: 'mapPulse 2s infinite'
+                            }}
+                          ></div>
+                        )}
+                        
+                        {/* Hover/Active Tooltip */}
+                        <div className="hotspot-tooltip">
+                          <div className="tooltip-category">[{article.category}] • {article.source}</div>
+                          <div className="tooltip-title">{article.title}</div>
+                          <div className="tooltip-footer">
+                            <span className="tooltip-severity" style={{ color: severityColor }}>[{article.severityIndex}]</span>
+                            <a 
+                              href={sanitizeUrl(article.link || '#')} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="tooltip-link"
+                              onClick={(e) => e.stopPropagation()}
+                              style={{ 
+                                color: 'var(--accent)', 
+                                textDecoration: 'none', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: '0.15rem',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              <span>Read Source</span>
+                              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
