@@ -1368,6 +1368,10 @@ input, select {
   to { transform: rotate(360deg); }
 }
 
+.spin-animation {
+  animation: spinSweep 1.5s linear infinite;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
