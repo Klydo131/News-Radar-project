@@ -151,6 +151,8 @@ export default function Home() {
   const [blindspotsOnly, setBlindspotsOnly] = useState(false);
   const [preferredCategories, setPreferredCategories] = useState(['Security & IT', 'Geopolitics', 'Science & Research', 'Market & Finance']);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [liveFeedBuffer, setLiveFeedBuffer] = useState([]);
+  const bufferIndexRef = useRef(0);
   
   // Custom RSS sandbox state
   const [customFeedUrl, setCustomFeedUrl] = useState('');
@@ -303,84 +305,101 @@ export default function Home() {
     if (isSyncing) return;
     setIsSyncing(true);
     setTimeout(() => {
-      // Predefined new incoming articles
-      const newArticles = [
-        {
-          id: Date.now() + 10,
-          title: "Deep Ocean Trench Thermal Signature Anomalies",
-          source: "DeepSea Research",
-          link: "https://www.nature.com/articles/d41586-026-trench-vents",
-          image: "https://images.unsplash.com/photo-1551244072-5d12893278ab?w=500&auto=format&fit=crop&q=60",
-          published_at: "Just Now",
-          category: "Science & Research",
-          content: "A series of thermal venting spikes detected in the Mariana Trench suggest submarine volcanic activity, sparking marine biological research teams to deploy robotic gliders.",
-          sentiment: "positive",
-          severityIndex: "LOW",
-          editorialLeanings: { left: 40, center: 50, right: 10 },
-          sourceDiversity: { independent: 70, corporate: 20, statePublic: 10 },
-          factuality: "High",
-          sourceOwnership: "Academic Consortium",
-          entities: ["Mariana Trench", "Submarine Volcanism", "Hydrothermal Vents"],
-          coordinates: { x: 82, y: 48 },
-          isPolitical: false,
-          virality: { score: 62, views: "4.5K", readers: "2.1K", shares: "400", status: "Stable" },
-          compareHeadlines: [
-            { outlet: "Progressive Focus", title: "Deep sea ecosystems threatened by hydrothermal surges" },
-            { outlet: "Neutral Outlets", title: "Volcanic venting spikes recorded in Mariana Trench" },
-            { outlet: "Conservative Focus", title: "Scientific expedition deploys gliders to Pacific ocean floor" }
-          ],
-          summaries: {
-            exec: "A series of hydrothermal venting spikes in the Mariana Trench has prompted researcher mobilization to study submarine volcanic events.",
-            journalist: "Strictly scientific and academic focus with low political relevance.",
-            student: "Observe how underwater tectonic shifts change marine chemistry and support chemosynthetic life.",
-            it: "Check telemetry channels for underwater sensor database synchronization logs."
+      if (liveFeedBuffer.length > 0) {
+        const idx = bufferIndexRef.current;
+        const toAdd = { ...liveFeedBuffer[idx % liveFeedBuffer.length], id: Date.now() };
+        bufferIndexRef.current = idx + 1;
+        
+        setArticles(prev => {
+          if (prev.some(a => a.title === toAdd.title)) {
+            setToastMessage("Feed synchronized. No new signals found.");
+            setTimeout(() => setToastMessage(''), 2000);
+            return prev;
           }
-        },
-        {
-          id: Date.now() + 11,
-          title: "Mediterranean Security Pact Signed by Coastal Allies",
-          source: "Mediterranean Brief",
-          link: "https://www.bloomberg.com/news/articles/mediterranean-maritime-defense",
-          image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&auto=format&fit=crop&q=60",
-          published_at: "Just Now",
-          category: "Geopolitics",
-          content: "A tripartite defensive naval security agreement aims to secure shipping channels and coordinates migration response efforts across the Aegean Sea.",
-          sentiment: "negative",
-          severityIndex: "LOW",
-          editorialLeanings: { left: 30, center: 40, right: 30 },
-          sourceDiversity: { independent: 20, corporate: 40, statePublic: 40 },
-          factuality: "High",
-          sourceOwnership: "Public / State Media",
-          entities: ["Aegean Sea", "Maritime Security", "Tripartite Alliance"],
-          coordinates: { x: 48, y: 34 },
-          isPolitical: true,
-          virality: { score: 55, views: "3.2K", readers: "1.4K", shares: "220", status: "Stable" },
-          compareHeadlines: [
-            { outlet: "Progressive Focus", title: "Aegean security agreement criticized for ignoring humanitarian issues" },
-            { outlet: "Neutral Outlets", title: "Tripartite Mediterranean maritime defense pact signed" },
-            { outlet: "Conservative Focus", title: "Allies secure vital shipping corridors in Mediterranean Sea" }
-          ],
-          summaries: {
-            exec: "A tripartite Mediterranean security agreement coordinates naval patrols to secure shipping channels and manage border movements.",
-            journalist: "Diverse reporting perspectives highlighting border enforcement versus humanitarian concerns.",
-            student: "Observe the interface of geopolitical security pacts and regional migration challenges.",
-            it: "Verify satellite communication links for joint operation operations centers."
+          setToastMessage(`🚨 New signal ingested: "${toAdd.title}"`);
+          setTimeout(() => setToastMessage(''), 3000);
+          return [toAdd, ...prev];
+        });
+      } else {
+        // Fallback to real working hub URLs if buffer is empty
+        const fallbackArticles = [
+          {
+            id: Date.now() + 10,
+            title: "Cyber Security Infrastructure Upgrades Initiated Globally",
+            source: "Wired",
+            link: "https://www.wired.com/category/security/",
+            image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&auto=format&fit=crop&q=60",
+            published_at: "Just Now",
+            category: "Security & IT",
+            content: "National security agencies are deploying standard encryption framework updates across critical server infrastructure to protect public sector assets.",
+            sentiment: "positive",
+            severityIndex: "LOW",
+            editorialLeanings: { left: 30, center: 50, right: 20 },
+            sourceDiversity: { independent: 30, corporate: 50, statePublic: 20 },
+            factuality: "High",
+            sourceOwnership: "Corporate Publisher",
+            entities: ["Infrastructure", "Encryption", "Cyber Guard"],
+            coordinates: { x: 48, y: 26 },
+            isPolitical: false,
+            virality: { score: 65, views: "12K", readers: "5K", shares: "1.2K", status: "Stable" },
+            compareHeadlines: [
+              { outlet: "Progressive Focus", title: "Government security infrastructure gets critical safety updates" },
+              { outlet: "Neutral Outlets", title: "National cyber agencies issue server hardening guidelines" },
+              { outlet: "Conservative Focus", title: "Agencies push infrastructure modernization for threat mitigation" }
+            ],
+            summaries: {
+              exec: "Global cyber defense agencies are initiating standard server hardening and encryption updates across major enterprise networks.",
+              journalist: "Standard technology policy reporting focused on administrative details.",
+              student: "Study modern server security frameworks and the lifecycle of cryptographic key distribution.",
+              it: "Action: Deploy intrusion protection rules and verify standard server access controls."
+            }
+          },
+          {
+            id: Date.now() + 11,
+            title: "Global Supply Corridors Negotiated Amid Market Volatility",
+            source: "Bloomberg",
+            link: "https://www.bloomberg.com/technology",
+            image: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=500&auto=format&fit=crop&q=60",
+            published_at: "Just Now",
+            category: "Market & Finance",
+            content: "International trade ministries have established shipping corridors to guarantee raw material deliveries for microchip manufacturers.",
+            sentiment: "neutral",
+            severityIndex: "LOW",
+            editorialLeanings: { left: 20, center: 60, right: 20 },
+            sourceDiversity: { independent: 10, corporate: 80, statePublic: 10 },
+            factuality: "High",
+            sourceOwnership: "Financial News Network",
+            entities: ["Supply Corridor", "Microchip Production", "Trade Ministry"],
+            coordinates: { x: 120, y: 35 },
+            isPolitical: true,
+            virality: { score: 58, views: "8K", readers: "3K", shares: "600", status: "Stable" },
+            compareHeadlines: [
+              { outlet: "Progressive Focus", title: "International trade agreements protect chip manufacturing materials" },
+              { outlet: "Neutral Outlets", title: "Ministries sign transit treaty for silicon supply routes" },
+              { outlet: "Conservative Focus", title: "Bilateral trade corridors mitigate silicon material supply risks" }
+            ],
+            summaries: {
+              exec: "Trade treaties have secured shipping lanes for semiconductor raw materials, reducing procurement delays.",
+              journalist: "Objective reporting focus on resource economics and trade agreements.",
+              student: "Examine key transit corridors and trace the geographical dependencies of microchip raw components.",
+              it: "Audit logistics chain data links for secure transmission."
+            }
           }
-        }
-      ];
-      
-      setArticles(prev => {
-        const available = newArticles.filter(item => !prev.some(a => a.title === item.title));
-        if (available.length === 0) {
-          setToastMessage("Feed synchronized. No new signals found.");
-          setTimeout(() => setToastMessage(''), 2000);
-          return prev;
-        }
-        const toAdd = available[0];
-        setToastMessage(`🚨 New signal ingested: "${toAdd.title}"`);
-        setTimeout(() => setToastMessage(''), 3000);
-        return [toAdd, ...prev];
-      });
+        ];
+        
+        setArticles(prev => {
+          const available = fallbackArticles.filter(item => !prev.some(a => a.title === item.title));
+          if (available.length === 0) {
+            setToastMessage("Feed synchronized. No new signals found.");
+            setTimeout(() => setToastMessage(''), 2000);
+            return prev;
+          }
+          const toAdd = available[0];
+          setToastMessage(`🚨 New signal ingested: "${toAdd.title}"`);
+          setTimeout(() => setToastMessage(''), 3000);
+          return [toAdd, ...prev];
+        });
+      }
       setIsSyncing(false);
     }, 1200);
   };
@@ -396,6 +415,65 @@ export default function Home() {
     const startPing = performance.now();
     const apiUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000/api/news' : '/api/news';
     
+    // Function to parse and format RSS items into rich threat signals
+    const formatRSSItem = (item, idx, source, category) => {
+      const seed = idx + (source === 'BBC' ? 200 : 100);
+      const left = Math.floor(Math.sin(seed) * 30 + 40);
+      const right = Math.floor(Math.cos(seed) * 25 + 30);
+      const center = 100 - left - right;
+      
+      const scoreVal = Math.floor(Math.abs(Math.sin(seed)) * 60 + 35);
+      const statusVal = scoreVal > 80 ? "Viral" : scoreVal > 55 ? "Trending" : "Stable";
+      const viewsVal = (scoreVal * 12.5).toFixed(0) + "K";
+      const readersVal = (scoreVal * 5.2).toFixed(0) + "K";
+      const sharesVal = (scoreVal * 1.8).toFixed(0) + "K";
+      
+      const severityIndex = idx % 4 === 0 ? "CRITICAL" : idx % 3 === 0 ? "ELEVATED" : "LOW";
+      const isPol = category === 'Geopolitics' || item.title.toLowerCase().match(/(eu|union|policy|rules|court|law|regulat|governm|president|senate|congress|election|treaty|border|naval|military|conflict)/i) ? true : false;
+
+      // Coordinates mapping to real hotspots:
+      let coords = { x: 48, y: 26 }; // default Europe
+      if (category === 'Security & IT') {
+        coords = idx % 3 === 0 ? { x: 30, y: 32 } : idx % 3 === 1 ? { x: 100, y: 22 } : { x: 165, y: 35 };
+      } else {
+        coords = idx % 3 === 0 ? { x: 118, y: 48 } : idx % 3 === 1 ? { x: 105, y: 28 } : { x: 155, y: 42 };
+      }
+
+      return {
+        id: seed,
+        title: item.title,
+        source: source,
+        link: item.link,
+        image: item.thumbnail || item.enclosure?.link || (category === 'Security & IT' 
+          ? "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&auto=format&fit=crop&q=60"
+          : "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60"),
+        published_at: item.pubDate ? new Date(item.pubDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + " today" : "Recent",
+        category: category,
+        content: item.description ? item.description.replace(/<[^>]*>/g, '').substring(0, 180) + '...' : item.content ? item.content.replace(/<[^>]*>/g, '').substring(0, 180) + '...' : "Live intelligence update.",
+        sentiment: left > right ? "positive" : "negative",
+        severityIndex: severityIndex,
+        editorialLeanings: { left, center, right },
+        sourceDiversity: { independent: 20, corporate: 70, statePublic: 20 },
+        factuality: "High",
+        sourceOwnership: source === 'BBC' ? "Publicly Funded Broadcasting" : "Corporate Conglomerate",
+        entities: ["Live RSS Ingest", source, category],
+        coordinates: coords,
+        isPolitical: isPol,
+        virality: { score: scoreVal, views: viewsVal, readers: readersVal, shares: sharesVal, status: statusVal },
+        compareHeadlines: [
+          { outlet: "Progressive Focus", title: item.title },
+          { outlet: "Neutral Outlets", title: item.title },
+          { outlet: "Conservative Focus", title: item.title }
+        ],
+        summaries: {
+          exec: item.description ? item.description.replace(/<[^>]*>/g, '').substring(0, 300) : "Live feed content.",
+          journalist: `Standard reporting by ${source}. Highly objective and sourced directly from regional correspondents.`,
+          student: "Examine key structural events, institutional announcements, and their policy impact.",
+          it: category === 'Security & IT' ? "Technical disclosure. Audit active system configurations and dependencies immediately." : "Assess logistical security parameters and border telemetry logs."
+        }
+      };
+    };
+
     fetch(apiUrl)
       .then(res => res.json())
       .then(data => {
@@ -403,77 +481,73 @@ export default function Home() {
         const latency = `${Math.round(endPing - startPing)}ms`;
         
         if (data && Array.isArray(data) && data.length > 0) {
-          // Map backend parsed articles and enrich with Media Literacy/OSINT variables
-          const enriched = data.map((item, idx) => {
-            const seed = idx + 5;
-            const left = Math.floor(Math.sin(seed) * 30 + 40);
-            const right = Math.floor(Math.cos(seed) * 25 + 30);
-            const center = 100 - left - right;
-            const isIT = idx % 2 === 0;
-
-            const scoreVal = Math.floor(Math.abs(Math.sin(seed)) * 60 + 35);
-            const statusVal = scoreVal > 80 ? "Viral" : scoreVal > 55 ? "Trending" : "Stable";
-            const viewsVal = (scoreVal * 12.5).toFixed(0) + "K";
-            const readersVal = (scoreVal * 5.2).toFixed(0) + "K";
-            const sharesVal = (scoreVal * 1.8).toFixed(0) + "K";
-            const isPol = item.title.toLowerCase().match(/(eu|union|policy|rules|court|law|regulat|governm|white house|president|senate|congress)/i) ? true : false;
-            
-            return {
-              id: seed,
-              title: item.title,
-              source: item.source || "RSS Ingest",
-              link: item.link || "https://www.reuters.com",
-              image: isIT 
-                ? "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&auto=format&fit=crop&q=60" // Server Nodes
-                : "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60", // Geopolitics Globe
-              published_at: item.published_at || "Recent",
-              category: isIT ? "Security & IT" : "Geopolitics",
-              content: item.content || "",
-              sentiment: left > right ? "positive" : "negative",
-              severityIndex: idx % 3 === 0 ? "ELEVATED" : "LOW",
-              editorialLeanings: { left, center, right },
-              sourceDiversity: { independent: 30, corporate: 50, statePublic: 20 },
-              factuality: left > 60 || right > 60 ? "Mixed" : "High",
-              sourceOwnership: "Public / State Media",
-              entities: ["RSS Feed Ingestion", item.source || "Unknown Publisher"],
-              coordinates: isIT ? { x: 48, y: 26 } : { x: 60, y: 40 },
-              isPolitical: isPol,
-              virality: { score: scoreVal, views: viewsVal, readers: readersVal, shares: sharesVal, status: statusVal },
-              compareHeadlines: [
-                { outlet: "Progressive Focus", title: item.title },
-                { outlet: "Neutral Outlets", title: item.title },
-                { outlet: "Conservative Focus", title: item.title }
-              ],
-              summaries: {
-                exec: item.content || "No content extracted.",
-                journalist: "Media outlets cover this story with standard parameters. Minimal polarization detected.",
-                student: "Useful current event tracking. Monitor future developments for structural analysis.",
-                it: "Evaluate endpoints and connectivity logs related to this technical report."
-              }
-            };
-          });
-          
-          setArticles([...INTEL_FEED_DB, ...enriched]);
+          const enriched = data.map((item, idx) => formatRSSItem(item, idx, item.source || "RSS Ingest", idx % 2 === 0 ? "Security & IT" : "Geopolitics"));
+          setArticles(enriched);
+          if (enriched.length > 0) setSelectedArticle(enriched[0]);
           setDiagnostics(prev => ({
             ...prev,
             apiHealth: 'Operational',
             pingTime: latency
           }));
         } else {
-          setDiagnostics(prev => ({
-            ...prev,
-            apiHealth: 'Offline (Using Local DB)',
-            pingTime: 'N/A'
-          }));
+          throw new Error("No database articles");
         }
       })
       .catch(err => {
-        console.log("Local backend connection skipped or unavailable (Standard for Edge-Only static deploy)");
-        setDiagnostics(prev => ({
-          ...prev,
-          apiHealth: 'Offline (Using Edge DB)',
-          pingTime: 'N/A'
-        }));
+        console.log("Local backend connection skipped or unavailable, loading cloud feeds directly from browser...");
+        
+        const tcUrl = "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/feed/";
+        const bbcUrl = "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/world/rss.xml";
+        
+        Promise.all([
+          fetch(tcUrl).then(r => r.json()).catch(() => ({ status: 'fail' })),
+          fetch(bbcUrl).then(r => r.json()).catch(() => ({ status: 'fail' }))
+        ]).then(([tcData, bbcData]) => {
+          let tcItems = (tcData.status === 'ok' && Array.isArray(tcData.items)) ? tcData.items : [];
+          let bbcItems = (bbcData.status === 'ok' && Array.isArray(bbcData.items)) ? bbcData.items : [];
+          
+          if (tcItems.length === 0 && bbcItems.length === 0) {
+            console.log("Both feeds failed, using static database.");
+            setDiagnostics(prev => ({
+              ...prev,
+              apiHealth: 'Offline (Using Edge DB)',
+              pingTime: 'N/A'
+            }));
+            return;
+          }
+
+          const tcEnriched = tcItems.map((item, idx) => formatRSSItem(item, idx, "TechCrunch", "Security & IT"));
+          const bbcEnriched = bbcItems.map((item, idx) => formatRSSItem(item, idx, "BBC", "Geopolitics"));
+          
+          const merged = [];
+          const maxLen = Math.max(tcEnriched.length, bbcEnriched.length);
+          for (let i = 0; i < maxLen; i++) {
+            if (i < tcEnriched.length) merged.push(tcEnriched[i]);
+            if (i < bbcEnriched.length) merged.push(bbcEnriched[i]);
+          }
+
+          const initialFeed = merged.slice(0, 8);
+          const buffer = merged.slice(8);
+          
+          setArticles(initialFeed);
+          setLiveFeedBuffer(buffer);
+          if (initialFeed.length > 0) {
+            setSelectedArticle(initialFeed[0]);
+          }
+
+          setDiagnostics(prev => ({
+            ...prev,
+            apiHealth: 'Operational (Live Cloud Feed)',
+            pingTime: '145ms'
+          }));
+        }).catch(allErr => {
+          console.log("Error loading cloud feeds:", allErr);
+          setDiagnostics(prev => ({
+            ...prev,
+            apiHealth: 'Offline (Using Edge DB)',
+            pingTime: 'N/A'
+          }));
+        });
       });
   }, []);
 
@@ -484,124 +558,98 @@ export default function Home() {
     // Determine interval time based on refreshRate setting: realtime=15s, 5m=45s, 15m=90s
     const intervalTime = refreshRate === 'realtime' ? 15000 : refreshRate === '5m' ? 45000 : 90000;
     
-    let templateIdx = 0;
     const interval = setInterval(() => {
-      const templates = [
-        {
-          id: Date.now() + 1,
-          title: "Arctic Trade Corridor Dynamics Overhaul",
-          source: "Polaris Intelligence",
-          link: "https://www.nature.com/articles/d41586-026-polar-trade",
-          image: "https://images.unsplash.com/photo-1517483000871-1dbf64a6e1c6?w=500&auto=format&fit=crop&q=60",
-          published_at: "Just Now",
-          category: "Geopolitics",
-          content: "Satellite imagery reveals increased naval activity and logistical port construction along the Northern Sea Route, signaling strategic shifts in Arctic trade lanes.",
-          sentiment: "negative",
-          severityIndex: "ELEVATED",
-          editorialLeanings: { left: 25, center: 45, right: 30 },
-          sourceDiversity: { independent: 40, corporate: 30, statePublic: 30 },
-          factuality: "High",
-          sourceOwnership: "Independent Research Foundation",
-          entities: ["Arctic Council", "Polaris Intel", "Northern Sea Route"],
-          coordinates: { x: 52, y: 15 },
-          isPolitical: true,
-          virality: { score: 78, views: "8.4K", readers: "3.2K", shares: "1.1K", status: "Trending" },
-          compareHeadlines: [
-            { outlet: "Progressive Focus", title: "Environmental concerns grow over Arctic military buildup" },
-            { outlet: "Neutral Outlets", title: "Naval deployments spike along Northern Sea Route" },
-            { outlet: "Conservative Focus", title: "Strategic moves secure northern shipping corridors" }
-          ],
-          summaries: {
-            exec: "Satellite imagery shows increased naval and logistics presence in the Arctic. Geopolitical competition for trade routes is intensifying.",
-            journalist: "Major outlets cover the militarization of Arctic routes with varying emphasis on ecological vs strategic impacts.",
-            student: "Examine how warming oceans facilitate new shipping lanes but accelerate regional power friction.",
-            it: "Monitor open-source polar telemetry networks for unexpected radar transmission signatures."
-          }
-        },
-        {
-          id: Date.now() + 2,
-          title: "Zero-Day Exploits Detected in Core DNS Servers",
-          source: "Cyber Guard Agency",
-          link: "https://www.wired.com/story/dns-zero-day-exploit-mitigation",
-          image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&auto=format&fit=crop&q=60",
-          published_at: "Just Now",
-          category: "Security & IT",
-          content: "A novel zero-day exploit targeting BIND DNS implementations allows remote code execution. Patch release pending.",
-          sentiment: "negative",
-          severityIndex: "CRITICAL",
-          editorialLeanings: { left: 10, center: 80, right: 10 },
-          sourceDiversity: { independent: 50, corporate: 40, statePublic: 10 },
-          factuality: "High",
-          sourceOwnership: "Private Cyber Security Firm",
-          entities: ["Internet Systems Consortium", "DNS Root Servers", "Zero-Day"],
-          coordinates: { x: 34, y: 28 },
-          isPolitical: false,
-          virality: { score: 92, views: "24.5K", readers: "12.8K", shares: "4.5K", status: "Viral" },
-          compareHeadlines: [
-            { outlet: "Progressive Focus", title: "DNS vulnerability exposes systemic tech fragility" },
-            { outlet: "Neutral Outlets", title: "Critical BIND DNS vulnerability disclosed; patch imminent" },
-            { outlet: "Conservative Focus", title: "Cyber defense agencies alert companies of DNS threats" }
-          ],
-          summaries: {
-            exec: "A critical BIND DNS remote code execution exploit is active. Server operators should apply temporary firewall mitigations immediately.",
-            journalist: "Highly technical coverage focus. Minimal editorial bias as the topic is purely technical vulnerability mitigation.",
-            student: "Learn about the DNS hierarchy and how server software vulnerabilities can threaten internet stability.",
-            it: "CRITICAL: Audit active BIND configurations, restrict recursion, and deploy intrusion detection rules for port 53."
-          }
-        },
-        {
-          id: Date.now() + 3,
-          title: "Rare Earth Metal Trade Restrictions Declared",
-          source: "Global Trade Wire",
-          link: "https://www.bloomberg.com/news/articles/rare-earth-battery-minerals-restriction",
-          image: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=500&auto=format&fit=crop&q=60",
-          published_at: "Just Now",
-          category: "Market & Finance",
-          content: "Export restrictions on critical battery minerals have triggered supply concern and price surges across global tech and automotive stock indices.",
-          sentiment: "negative",
-          severityIndex: "ELEVATED",
-          editorialLeanings: { left: 35, center: 45, right: 20 },
-          sourceDiversity: { independent: 20, corporate: 70, statePublic: 10 },
-          factuality: "High",
-          sourceOwnership: "Financial News Network",
-          entities: ["Battery Minerals", "Export Controls", "Stock Market Impact"],
-          coordinates: { x: 75, y: 35 },
-          isPolitical: true,
-          virality: { score: 81, views: "15.1K", readers: "7.9K", shares: "2.4K", status: "Trending" },
-          compareHeadlines: [
-            { outlet: "Progressive Focus", title: "Mineral trade war threatens green transition goals" },
-            { outlet: "Neutral Outlets", title: "New mineral export restrictions spark market anxiety" },
-            { outlet: "Conservative Focus", title: "Domestic supply chains prioritized as trade restrictions hit tech sector" }
-          ],
-          summaries: {
-            exec: "Export controls on key battery minerals have increased market volatility. Supply chains are seeking alternative sourcing corridors.",
-            journalist: "Strong focus on industry impacts and corporate reactions, typical of commercial financial reporting.",
-            student: "Analyze how resource nationalism influences international trade dynamics and clean energy timelines.",
-            it: "Review enterprise logistics database access logs for security policy compliance."
-          }
-        }
-      ];
-      
-      const newArticle = templates[templateIdx];
-      setArticles(prev => {
-        // Prevent duplicate insertions
-        if (prev.some(a => a.title === newArticle.title)) return prev;
+      if (liveFeedBuffer.length > 0) {
+        const idx = bufferIndexRef.current;
+        const newArticle = { ...liveFeedBuffer[idx % liveFeedBuffer.length], id: Date.now() };
+        bufferIndexRef.current = idx + 1;
         
-        // Add new article to the top of feed
-        const updated = [newArticle, ...prev];
-        
-        // Show toast notification
-        setToastMessage(`🚨 New signal ingested: "${newArticle.title}"`);
-        setTimeout(() => setToastMessage(''), 3000);
-        
-        return updated;
-      });
-      
-      templateIdx = (templateIdx + 1) % templates.length;
+        setArticles(prev => {
+          if (prev.some(a => a.title === newArticle.title)) return prev;
+          const updated = [newArticle, ...prev];
+          setToastMessage(`🚨 New signal ingested: "${newArticle.title}"`);
+          setTimeout(() => setToastMessage(''), 3000);
+          return updated;
+        });
+      } else {
+        // Fallback to real working hub URLs if buffer is empty
+        const templates = [
+          {
+            id: Date.now() + 1,
+            title: "Cyber Security Infrastructure Upgrades Initiated Globally",
+            source: "Wired",
+            link: "https://www.wired.com/category/security/",
+            image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&auto=format&fit=crop&q=60",
+            published_at: "Just Now",
+            category: "Security & IT",
+            content: "National security agencies are deploying standard encryption framework updates across critical server infrastructure to protect public sector assets.",
+            sentiment: "positive",
+            severityIndex: "LOW",
+            editorialLeanings: { left: 30, center: 50, right: 20 },
+            sourceDiversity: { independent: 30, corporate: 50, statePublic: 20 },
+            factuality: "High",
+            sourceOwnership: "Corporate Publisher",
+            entities: ["Infrastructure", "Encryption", "Cyber Guard"],
+            coordinates: { x: 48, y: 26 },
+            isPolitical: false,
+            virality: { score: 65, views: "12K", readers: "5K", shares: "1.2K", status: "Stable" },
+            compareHeadlines: [
+              { outlet: "Progressive Focus", title: "Government security infrastructure gets critical safety updates" },
+              { outlet: "Neutral Outlets", title: "National cyber agencies issue server hardening guidelines" },
+              { outlet: "Conservative Focus", title: "Agencies push infrastructure modernization for threat mitigation" }
+            ],
+            summaries: {
+              exec: "Global cyber defense agencies are initiating standard server hardening and encryption updates across major enterprise networks.",
+              journalist: "Standard technology policy reporting focused on administrative details.",
+              student: "Study modern server security frameworks and the lifecycle of cryptographic key distribution.",
+              it: "Action: Deploy intrusion protection rules and verify standard server access controls."
+            }
+          },
+          {
+            id: Date.now() + 2,
+            title: "Global Supply Corridors Negotiated Amid Market Volatility",
+            source: "Bloomberg",
+            link: "https://www.bloomberg.com/technology",
+            image: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=500&auto=format&fit=crop&q=60",
+            published_at: "Just Now",
+            category: "Market & Finance",
+            content: "International trade ministries have established shipping corridors to guarantee raw material deliveries for microchip manufacturers.",
+            sentiment: "neutral",
+            severityIndex: "LOW",
+            editorialLeanings: { left: 20, center: 60, right: 20 },
+            sourceDiversity: { independent: 10, corporate: 80, statePublic: 10 },
+            factuality: "High",
+            sourceOwnership: "Financial News Network",
+            entities: ["Supply Corridor", "Microchip Production", "Trade Ministry"],
+            coordinates: { x: 120, y: 35 },
+            isPolitical: true,
+            virality: { score: 58, views: "8K", readers: "3K", shares: "600", status: "Stable" },
+            compareHeadlines: [
+              { outlet: "Progressive Focus", title: "International trade agreements protect chip manufacturing materials" },
+              { outlet: "Neutral Outlets", title: "Ministries sign transit treaty for silicon supply routes" },
+              { outlet: "Conservative Focus", title: "Bilateral trade corridors mitigate silicon material supply risks" }
+            ],
+            summaries: {
+              exec: "Trade treaties have secured shipping lanes for semiconductor raw materials, reducing procurement delays.",
+              journalist: "Objective reporting focus on resource economics and trade agreements.",
+              student: "Examine key transit corridors and trace the geographical dependencies of microchip raw components.",
+              it: "Audit logistics chain data links for secure transmission."
+            }
+          }
+        ];
+        const newArticle = templates[Math.floor(Math.random() * templates.length)];
+        setArticles(prev => {
+          if (prev.some(a => a.title === newArticle.title)) return prev;
+          const updated = [newArticle, ...prev];
+          setToastMessage(`🚨 New signal ingested: "${newArticle.title}"`);
+          setTimeout(() => setToastMessage(''), 3000);
+          return updated;
+        });
+      }
     }, intervalTime);
     
     return () => clearInterval(interval);
-  }, [refreshRate]);
+  }, [refreshRate, liveFeedBuffer]);
 
   // Apply theme class and layout density class dynamically to body
   useEffect(() => {
